@@ -15,20 +15,26 @@ def run_test_robot(n_steps=10000, render=False, goal = [0,0,0,0,0]):
     vel0 = np.zeros(env.n())
     pos0 = np.zeros(env.n())
     ob, _ = env.reset(pos=pos0, vel=vel0)
+    speed = 0.1
 
     history = []
     for _ in range(n_steps):
-        if ob["robot_0"]["joint_state"]["position"][0] <  goal[0] and ob["robot_0"]["joint_state"]["position"][1] < goal[1]:
-            largest_distance = max(goal)
-            ob, *_ = env.step(np.array([0.1*goal[0]/largest_distance,0.1*goal[1]/largest_distance,0,0,0]))
+        position_ob = ob["robot_0"]["joint_state"]["position"]
+        largest_distance = max(map(abs,goal))
+        # print (position_ob[0], position_ob[1])
+        # print(position_ob[0] >= goal[0], position_ob[1] >= goal[1], position_ob[0] <= goal[0], position_ob[1] <= goal[1])
 
-        elif (ob["robot_0"]["joint_state"]["position"][0] <  goal[0] and ob["robot_0"]["joint_state"]["position"][1] > goal[1]):
-            ob, *_ = env.step(np.array([0.1,0,0,0,0]))
-
-        elif (ob["robot_0"]["joint_state"]["position"][0] >  goal[0] and ob["robot_0"]["joint_state"]["position"][1] < goal[1]):
-            ob, *_ = env.step(np.array([0,0.1,0,0,0]))
-        else: 
+        if (position_ob[0] >= goal[0]-0.1 and position_ob[0] <= goal[0]+0.1 and position_ob[1] >= goal[1]-0.1 and position_ob[1] <= goal[1]+0.1):
             ob, *_ = env.step(no_action)
+        
+        elif(position_ob[0] >= goal[0]-0.1 and position_ob[0] <= goal[0]+0.1 and not (position_ob[1] >= goal[1]-0.1 and position_ob[1] <= goal[1]+0.1)):
+            ob, *_ = env.step(np.array([0,speed*goal[1]/largest_distance,0,0,0]))
+
+        elif(position_ob[1] >= goal[1]-0.1 and position_ob[1] <= goal[1]+0.1 and not (position_ob[0] >= goal[0]-0.1 and position_ob[0] <= goal[0]+0.1)):
+            ob, *_ = env.step(np.array([speed*goal[0]/largest_distance,0,0,0,0]))
+
+        else: 
+            ob, *_ = env.step(np.array([speed*goal[0]/largest_distance,speed*goal[1]/largest_distance,0,0,0]))
 
         history.append(ob)
  
@@ -37,4 +43,4 @@ def run_test_robot(n_steps=10000, render=False, goal = [0,0,0,0,0]):
 
 
 if __name__ == "__main__":
-    run_test_robot(render=True, goal = [1, 2, 0, 0 ,0])
+    run_test_robot(render=True, goal = [-1, 1, 0, 0 ,0])
