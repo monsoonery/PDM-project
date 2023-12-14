@@ -8,7 +8,7 @@ from urdfenvs.urdf_common.urdf_env import UrdfEnv
 
 class Robot:
     def __init__(self):
-        robots = [GenericUrdfReacher(urdf="PDM-project/URDF/testRobot.urdf", mode="vel"),]
+        robots = [GenericUrdfReacher(urdf="../URDF/testRobot.urdf", mode="vel"),]
         self.env: UrdfEnv = gym.make("urdf-env-v0", dt=0.01, robots=robots, render=True)
         
         self.no_action = np.array([0,0,0,0,0])
