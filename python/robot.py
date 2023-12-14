@@ -17,7 +17,8 @@ class Robot:
         self.ob, _ = self.env.reset(pos=pos0, vel=vel0)
         
         self.goal = [0,0,0,0,0]
-        self.speed = 0.1
+        self.prev_goal = [0,0,0,0,0]
+        self.speed = 1
         self.history = []
         self.position_ob = self.ob["robot_0"]["joint_state"]["position"]
 
@@ -26,23 +27,28 @@ class Robot:
         return self.history
     
     def move_to_goal(self, goal):
-
+        distance_goal = []
+        for item in range(len(goal)):
+            distance_goal.append(goal[item]-self.prev_goal[item])
+        largest_distance = max(map(abs,distance_goal)) 
+        
         for _ in range(10000):
+            
             self.position_ob = self.ob["robot_0"]["joint_state"]["position"]
-            largest_distance = max(map(abs,goal))
             
             if (self.position_ob[0] >= goal[0]-0.1 and self.position_ob[0] <= goal[0]+0.1 and self.position_ob[1] >= goal[1]-0.1 and self.position_ob[1] <= goal[1]+0.1):
                 self.ob, *_ = self.env.step(self.no_action)
+                self.prev_goal = goal
                 break
             
             elif(self.position_ob[0] >= goal[0]-0.1 and self.position_ob[0] <= goal[0]+0.1 and not (self.position_ob[1] >= goal[1]-0.1 and self.position_ob[1] <= goal[1]+0.1)):
-                self.ob, *_ = self.env.step(np.array([0,self.speed*goal[1]/largest_distance,0,0,0]))
+                self.ob, *_ = self.env.step(np.array([0,self.speed*distance_goal[1]/largest_distance,0,0,0]))
 
             elif(self.position_ob[1] >= goal[1]-0.1 and self.position_ob[1] <= goal[1]+0.1 and not (self.position_ob[0] >= goal[0]-0.1 and self.position_ob[0] <= goal[0]+0.1)):
-                self.ob, *_ = self.env.step(np.array([self.speed*goal[0]/largest_distance,0,0,0,0]))
+                self.ob, *_ = self.env.step(np.array([self.speed*distance_goal[0]/largest_distance,0,0,0,0]))
 
             else: 
-                self.ob, *_ = self.env.step(np.array([self.speed*goal[0]/largest_distance,self.speed*goal[1]/largest_distance,0,0,0]))
+                self.ob, *_ = self.env.step(np.array([self.speed*distance_goal[0]/largest_distance,self.speed*distance_goal[1]/largest_distance,0,0,0]))
 
             self.history.append(self.ob)
 
