@@ -7,6 +7,8 @@ from urdfenvs.scene_examples.goal import *
 from urdfenvs.urdf_common.urdf_env import UrdfEnv
 import math
 
+verbose = True # set to False to silence (most) print statements
+
 sphere1Dict = {
     "type": "sphere",
     "geometry": {"position": [2.0, 2.0, 1.0], "radius": 1.0},
@@ -40,9 +42,9 @@ class Robot:
         self.history = []
         self.position_ob = self.ob["robot_0"]["joint_state"]["position"]
 
-        self.l1 = 1.
-        self.l2 = 1.
-        self.l3 = 1.
+        self.l1 = 0.6/2 # the mobile platform clips through the floor so not exactly 0.6?
+        self.l2 = 0.7
+        self.l3 = 0.6
         
 
     def close_simulation(self):
@@ -75,62 +77,110 @@ class Robot:
 
             self.history.append(self.ob)
 
-    def is_in_collision(self, x, y, q1, q2, q3):
+    def intersects_any_obstacle(self, x, y, z, r):
         """
-        using a lite version of the 'union of spheres' method
+        Computes Euclidean distance between obstacles and robot segments, both represented 
+        as spheres, and returns whether this part of the robot intersects with any of said
+        obstacles (aka, would be in collision)
+        INPUT: x, y, z, r -> coordinates and radius of a sphere on the robot
+        OUTPUT: boolean -> True = This sphere is in collision with one or more objects
         """
-        # check x and y collision ("disk" only ("disk" = the robot's driving platform))
-        x_robot = x
-        y_robot = y
-        z_robot = self.l1 / 2 # center of the disk
-        r_robot = self.l1 / 2 # radius needed for union of spheres representation
-        print(f"x_robot: {x_robot}, y_robot: {y_robot}, z_robot: {z_robot}, r_robot: {r_robot}")
 
-        # check collision with each obstacle
+        flag = False
+        #if (verbose): print(f"x_robot: {x}, y_robot: {y}, z_robot: {z}, r_robot: {r}")
+
         for obstacle in self.obstacles:
-            print(f"Checking obstacle with name {obstacle.name()}")
+            if (verbose): print(f"Checking obstacle with name {obstacle.name()}")
+
             x_obst = obstacle.position()[0]
             y_obst = obstacle.position()[1]
             z_obst = obstacle.position()[2]
             r_obst = obstacle.radius() 
 
-            distance = np.sqrt((x_robot - x_obst)**2 + (y_robot - y_obst)**2 + (z_robot - z_obst)**2)
-            print(f"- Euclidean distance of robot to {obstacle.name()} = {distance}", )
-            print(f"- Radius of robot disk + radius of {obstacle.name()} = {r_obst + r_robot}")
+            distance = np.sqrt((x - x_obst)**2 + (y - y_obst)**2 + (z - z_obst)**2)
 
-            if (distance < r_obst + r_robot):
-                print("Collision!")
-                #return True # NOTE TO SELF: DO NOT UNCOMMENT RETURN STATEMENTS UNTIL ENTIRE FUNCTION IS DONE
+            if (verbose): print(f"- Euclidean distance of robot sphere to {obstacle.name()} = {distance}", )
+            if (verbose): print(f"- Radius of robot sphere + radius of {obstacle.name()} = {r_obst + r}")
+
+            if (distance < r_obst + r):
+                if (verbose): print(f'[!] Robot is in collision with {obstacle.name()}. Quitting this loop')
+                flag = True
             else:
-                print("No collision :)")
-                #return False
-        return 
+                if (verbose): print(f'[x] No collision detected with {obstacle.name()}. Continuing')
+            
+        return flag
 
-        # check link 1 collision
+    def is_in_collision(self, config):
+        """
+        Using the 'union of spheres' method to calculate collisions between robot and obstacles
+        INPUT: config -> List containing configuration of the robot, format [x, y, q1, q2, q3] 
+        OUTPUT: boolean -> True = this configuration is in collision
+        """
 
-        # check link 2 collision
+        ##### Extract values
+        x, y, q1, q2, q3 = config
 
-        # check link 3 collision
-        for l1 in np.linspace(0, self.l1, 4):
-            for l2 in np.linspace(0, self.l2, 4):
-                for l3 in np.linspace(0, self.l3, 4):
-                    x_e = np.cos(q1) * (l2 * np.sin(q2) + l3 * np.cos(q2 + q3)) + d0 * np.cos(q1) + d0 * np.cos(q0)
-                    y_e = np.sin(q1) * (l2 * np.sin(q2) + l3 * np.cos(q2 + q3)) + d0 * np.cos(q1) + d0 * np.sin(q0)
-                    z_e = l2 * np.cos(q2) - l3 * np.sin(q2 + q3) + l1
-                    for obstacle in self.obstacles:
-                        print(obstacle.size())
-                        x_obst = 1.
-                        y_obst = 2.
-                        z_obst = 3.
-                        distance = np.sqrt((x_e - x_obst)**2 + (y_e - y_obst)**2 + (z_e - z_obst)**2)
-                        #obstacle.size()
-                        pass
+        ##### Step 1: Check x and y collision (mobile base only)
+        if (verbose): print("~~~~~~~~ Currently checking x and y collision ~~~~~~~~")
+        x_robot = x
+        y_robot = y
+        z_robot = self.l1 / 2 # center of base
+        r_robot = self.l1 / 2 # value taken from URDF, assuming the base is just 1 sphere (extremely simplified method)
+
+        if self.intersects_any_obstacle(x_robot, y_robot, z_robot, r_robot):
+            if (verbose): print("Collision!")
+            return True
+        else:
+            if (verbose): print("No collision :)")
+
+        ##### Step 2: Check first link collision (has dimension l2, beetje ongelukkige naam i know)
+        if (verbose): print("~~~~~~~~ Currently checking collision with first link ~~~~~~~~")
+        l2_division = 7 # in how many spheres will l2 be divided?
+
+        for l2 in np.linspace(0, self.l2, l2_division):
+            if (verbose): print(f"~~~~~~~ l2 = {l2}")
+            x_l2 = l2 * np.cos(q1) * np.sin(q2) + x
+            y_l2 = l2 * np.sin(q1) * np.sin(q2) + y
+            z_l2 = l2 * np.cos(q2) + self.l1
+            r_l2 = 0.1 # from URDF
+
+            if self.intersects_any_obstacle(x_l2, y_l2, z_l2, r_l2):
+                if (verbose): print("Collision!")
+                return True
+            else:
+                if (verbose): print("No collision :)")
+
+        ##### Step 3: Check second link collision (has dimension l3)
+        if (verbose): print("~~~~~~~~ Currently checking collision with second link ~~~~~~~~")
+        l3_division = 6
+
+        for l3 in np.linspace(0, self.l3, l3_division):
+            if (verbose): print(f"~~~~~~~ l3 = {l3}")
+            x_l3 = np.cos(q1) * (self.l2 * np.sin(q2) + l3 * np.cos(q2 + q3)) + x
+            y_l3 = np.sin(q1) * (self.l2 * np.sin(q2) + l3 * np.cos(q2 + q3)) + y
+            z_l3 = self.l2 * np.cos(q2) - l3 * np.sin(q2 + q3) + self.l1
+            r_l3 = 0.1 # from URDF
+
+            if self.intersects_any_obstacle(x_l3, y_l3, z_l3, r_l3):
+                if (verbose): print("Collision!")
+                return True
+            else:
+                if (verbose): print("No collision :)")
+        
+        # If none of the above ever return True, then there must be no collisions
+        return False
 
 if __name__ == "__main__":
     robot_0 = Robot()
-    robot_0.is_in_collision(-2, -2, 0, 0, 0)
+
     robot_0.move_to_goal(goal = [-1, 1, 0, 0 ,0])
-    robot_0.move_to_goal(goal = [-2, -2, 0, 0 ,0])
+
+    next_configuration = [0.9, 0.9, 0, 0 ,0] 
+    if (not robot_0.is_in_collision(next_configuration)):
+        robot_0.move_to_goal(goal = next_configuration)
+    else:
+        print("Passed due to collision")
+        
     robot_0.move_to_goal(goal = [0, 0, 0, 0 ,0])
-    robot_0.move_to_goal(goal = [-2, -2, 0, 0 ,0])
+
     history = robot_0.close_simulation()
