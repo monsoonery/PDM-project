@@ -27,18 +27,18 @@
     </link>
     <link name="base_link">
         <inertial>
-            <origin rpy="0 0 0" xyz="0 0 0"/>
-            <mass value="40.0"/>
-            <inertia ixx="2800000000.0" ixy="0.0" ixz="0.0" iyy="2800000000.0" iyz="0.0" izz="3200000000.0"/>
+            <origin rpy="0 0 0" xyz="0 0 0.2"/>
+            <mass value="30.0"/>
+            <inertia ixx="1600000000.0" ixy="0.0" ixz="0.0" iyy="1600000000.0" iyz="0.0" izz="2400000000.0"/>
         </inertial>
         <collision>
-            <origin rpy="0.0 0 0" xyz="0 0 0"/>
+            <origin rpy="0.0 0 0" xyz="0 0 0.2"/>
             <geometry>
-                <cylinder length="0.6" radius="0.4"/>
+                <cylinder length="0.4" radius="0.4"/>
             </geometry>
         </collision>
         <visual>
-            <origin rpy="0 0 0" xyz="0 0 0"/>
+            <origin rpy="0 0 0" xyz="0 0 0.2"/>
             <geometry>
                 <cylinder length="0.6" radius="0.4"/>
             </geometry>
@@ -88,9 +88,9 @@
         </visual>
     </link>
     <joint name="base_to_arm_1" type="revolute">
-        <origin xyz="0 0 0.35"/>
+        <origin xyz="0 0 0.5"/>
         <axis xyz="0 1 0"/>
-        <limit effort="1000.0" velocity="0.5" upper="1.7" lower="-1.7"/>
+        <limit effort="1000.0" velocity="0.5" upper="1.8" lower="-1.8"/>
         <parent link="base_link"/>
         <child link="arm_1_link"/>
     </joint>
@@ -116,9 +116,9 @@
         </visual>
     </link>
     <joint name="arm_1_to_arm_2" type="revolute">
-        <origin xyz="0 0 0.7"/>
+        <origin xyz="0 0 0.75"/>
         <axis xyz="0 1 0"/>
-        <limit effort="1000.0" velocity="0.5" upper="1.7" lower="-1.7"/>
+        <limit effort="1000.0" velocity="0.5" upper="2.1" lower="-2.1"/>
         <parent link="arm_1_link"/>
         <child link="arm_2_link"/>
     </joint>

@@ -4,9 +4,9 @@ import numpy as np
 import random
 import time
 
-from urdfenvs.scene_examples.obstacles import *
 from urdfenvs.scene_examples.goal import *
 from urdfenvs.urdf_common.urdf_env import UrdfEnv
+import obstacles
 import math
 
 verbose = True # set to False to silence (most) print statements
@@ -29,6 +29,10 @@ class Robot:
     def __init__(self):
         robots = [GenericUrdfReacher(urdf="URDF/testRobot.urdf", mode="vel"),]
         self.env: UrdfEnv = gym.make("urdf-env-v0", dt=0.01, robots=robots, render=True)
+
+        self.env.add_obstacle(obstacles.wall_obstacles)
+        self.env.add_obstacle(obstacles.cylinder_obstacle)
+        self.env.add_obstacle(obstacles.sphereObst1)
         self.obstacles = [sphere1, sphere2]
         for obstacle in self.obstacles:
             self.env.add_obstacle(obstacle)
@@ -41,14 +45,17 @@ class Robot:
         self.goal = [0,0,0,0,0]
         self.prev_goal = [0,0,0,0,0]
         self.reached = [False, False, False, False, False]
-        self.speed = 0.3
+        self.speed = 0.5
+        self.interval = 0.03
         self.history = []
         self.position_ob = self.ob["robot_0"]["joint_state"]["position"]
 
+
+        self.self_collision = False
+        
         self.l1 = 0.6/2 # the mobile platform clips through the floor so not exactly 0.6?
         self.l2 = 0.7
         self.l3 = 0.6
-        
 
     def close_simulation(self):
         self.env.close()
@@ -61,23 +68,23 @@ class Robot:
         return q
     
     def move_x_y(self, distance_goal, largest_distance):
-        if (self.position_ob[0] >= self.goal[0]-0.05 and self.position_ob[0] <= self.goal[0]+0.05 and 
-            self.position_ob[1] >= self.goal[1]-0.05 and self.position_ob[1] <= self.goal[1]+0.05): 
+        if (self.position_ob[0] >= self.goal[0]-self.interval and self.position_ob[0] <= self.goal[0]+self.interval and 
+            self.position_ob[1] >= self.goal[1]-self.interval and self.position_ob[1] <= self.goal[1]+self.interval): 
             # print("            2")
             x = 0 
             y = 0
 
-        elif (self.position_ob[0] >= self.goal[0]-0.05 and self.position_ob[0] <= self.goal[0]+0.05 and not (self.position_ob[1] >= self.goal[1]-0.05 and self.position_ob[1] <= self.goal[1]+0.05)):
+        elif (self.position_ob[0] >= self.goal[0]-self.interval and self.position_ob[0] <= self.goal[0]+self.interval and not (self.position_ob[1] >= self.goal[1]-self.interval and self.position_ob[1] <= self.goal[1]+self.interval)):
             # print("            3")
-            if self.position_ob[1] >= self.goal[1]-0.05: y = -self.speed
-            elif self.position_ob[1] <= self.goal[1]+0.05: y = self.speed
+            if self.position_ob[1] >= self.goal[1]-self.interval: y = -self.speed
+            elif self.position_ob[1] <= self.goal[1]+self.interval: y = self.speed
             else: y = 0
             x = 0
 
-        elif (self.position_ob[1] >= self.goal[1]-0.05 and self.position_ob[1] <= self.goal[1]+0.05 and not (self.position_ob[0] >= self.goal[0]-0.05 and self.position_ob[0] <= self.goal[0]+0.05)):
+        elif (self.position_ob[1] >= self.goal[1]-self.interval and self.position_ob[1] <= self.goal[1]+self.interval and not (self.position_ob[0] >= self.goal[0]-self.interval and self.position_ob[0] <= self.goal[0]+self.interval)):
             # print("            4")
-            if self.position_ob[0] >= self.goal[0]-0.05: x = -self.speed
-            elif self.position_ob[0] <= self.goal[0]+0.05: x = self.speed
+            if self.position_ob[0] >= self.goal[0]-self.interval: x = -self.speed
+            elif self.position_ob[0] <= self.goal[0]+self.interval: x = self.speed
             else: x = 0
             y = 0
             
@@ -88,7 +95,7 @@ class Robot:
         return x,y
     
     def move_angle(self, index, angle_between_goals, printen = False):
-        if (self.position_ob[index] >= self.goal[index]-0.05 and self.position_ob[index] <= self.goal[index]+0.05):
+        if (self.position_ob[index] >= self.goal[index]-self.interval and self.position_ob[index] <= self.goal[index]+self.interval):
             q = 0
             self.reached[index] = True
             # if printen == True: print("            6 = ", q)
@@ -111,7 +118,6 @@ class Robot:
 
         else: q = 0 # Should never happen
             
-
         return q
     
     def prepare_distance(self):
@@ -131,10 +137,27 @@ class Robot:
 
         return distance_goal, largest_distance
     
+    def check_self_collision_goal(self):
+        if (self.goal[3] > np.pi/2 or self.goal[3] < -np.pi/2): self.self_collision = True
+        if (self.goal[4] > 2*np.pi/3 or self.goal[4] < -2*np.pi/3): self.self_collision = True
+        # z = kinametics(self.goal)
+        # if (z < 0): self.self_collision = True
+        # print(1, self.self_collision)
+
+    def check_self_collision_pose(self):
+        if (self.position_ob[3] > np.pi/2 or self.position_ob[3] < -np.pi/2): self.self_collision = True
+        if (self.position_ob[4] > 2*np.pi/3 or self.position_ob[4] < -2*np.pi/3): self.self_collision = True
+        # z = kinametics(self.position_ob)
+        # if (z < 0): self.self_collision = True
+        # print(2, self.self_collision)
+
     def move_to_goal(self, goal):
         self.goal = goal
         self.reached = [False, False, False, False, False]
         distance_goal, largest_distance = self.prepare_distance()
+        
+        self.self_collision = False
+        self.check_self_collision_goal()
 
         for _ in range(10000):
             self.position_ob = self.ob["robot_0"]["joint_state"]["position"]
@@ -142,14 +165,20 @@ class Robot:
             self.position_ob[3] = self.angle_interval(self.position_ob[3])
             self.position_ob[4] = self.angle_interval(self.position_ob[4])
             
-            if (self.position_ob[0] >= self.goal[0]-0.05 and self.position_ob[0] <= self.goal[0]+0.05 and 
-                self.position_ob[1] >= self.goal[1]-0.05 and self.position_ob[1] <= self.goal[1]+0.05 and
-                self.position_ob[2] >= self.goal[2]-0.05 and self.position_ob[2] <= self.goal[2]+0.05 and 
-                self.position_ob[3] >= self.goal[3]-0.05 and self.position_ob[3] <= self.goal[3]+0.05 and
-                self.position_ob[4] >= self.goal[4]-0.05 and self.position_ob[4] <= self.goal[4]+0.05):
+            self.check_self_collision_pose()
+            
+            if (self.position_ob[0] >= self.goal[0]-self.interval and self.position_ob[0] <= self.goal[0]+self.interval and 
+                self.position_ob[1] >= self.goal[1]-self.interval and self.position_ob[1] <= self.goal[1]+self.interval and
+                self.position_ob[2] >= self.goal[2]-self.interval and self.position_ob[2] <= self.goal[2]+self.interval and 
+                self.position_ob[3] >= self.goal[3]-self.interval and self.position_ob[3] <= self.goal[3]+self.interval and
+                self.position_ob[4] >= self.goal[4]-self.interval and self.position_ob[4] <= self.goal[4]+self.interval):
                 self.ob, *_ = self.env.step(self.no_action)
                 self.prev_goal = self.goal
                 # print("            1")
+                break
+
+            if (self.self_collision == True):
+                self.ob, *_ = self.env.step(self.no_action)
                 break
 
             x,y = self.move_x_y(distance_goal, largest_distance)
@@ -269,9 +298,9 @@ if __name__ == "__main__":
         x = random.uniform(-1.2,1.2)
         y = random.uniform(-1.2,1.2)
         q0 = random.uniform(-np.pi,np.pi)
-        q1 = random.uniform(-np.pi/3,np.pi/3)
-        q2 = random.uniform(-np.pi/3,np.pi/3)
-        robot_0.move_to_goal(goal = [x, y, q0, q1 , q2])
+        q1 = random.uniform(-np.pi,np.pi)
+        q2 = random.uniform(-np.pi,np.pi)
+        robot_0.move_to_goal(goal = [x, y, q0, q1, q2])
         time.sleep(1)
 
     history = robot_0.close_simulation()
