@@ -4,15 +4,28 @@ from mpscenes.obstacles.urdf_obstacle import UrdfObstacle
 from mpscenes.obstacles.box_obstacle import BoxObstacle
 from mpscenes.obstacles.cylinder_obstacle import CylinderObstacle
 
-obst1Dict = {
+sphere1_dict = {
     "type": "sphere",
     "geometry": {"position": [2.0, 2.0, 1.0], "radius": 1.0},
     "rgba": [0.3, 0.5, 0.6, 1.0],
 }
-sphereObst1 = SphereObstacle(name="simpleSphere", content_dict=obst1Dict)
+sphere1 = SphereObstacle(
+    name="Sphere1", 
+    content_dict=sphere1_dict
+)
+
+sphere2_dict = {
+    "type": "sphere",
+    "geometry": {"position": [-2.0, -2.0, 1.0], "radius": 0.5},
+    "rgba": [0.1, 0.8, 0.9, 1.0],
+}
+sphere2 = SphereObstacle(
+    name="Sphere2", 
+    content_dict=sphere2_dict
+)
 
 wall_length = 10
-wall_obstacles_dicts = {
+wall1_dict = {
         'type': 'box', 
         'geometry': {
             'position': [-wall_length/2.0, 0.0, 0.4], 'width': wall_length, 'height': 0.8, 'length': 0.1
@@ -30,12 +43,12 @@ wall_obstacles_dicts = {
             'length': 0.1,
         },
     }
-wall_obstacles = BoxObstacle(
-    name="cylinder_obstacle",
-    content_dict=wall_obstacles_dicts
+wall1 = BoxObstacle(
+    name="Wall1",
+    content_dict=wall1_dict
 )
 
-cylinder_obstacle_dict = {
+cylinder1_dict = {
     "type": "cylinder",
     "movable": False,
     "geometry": {
@@ -45,7 +58,12 @@ cylinder_obstacle_dict = {
     },
     "rgba": [0.1, 0.3, 0.3, 1.0],
 }
-cylinder_obstacle = CylinderObstacle(
-    name="cylinder_obstacle",
-    content_dict=cylinder_obstacle_dict
+cylinder1 = CylinderObstacle(
+    name="Cylinder1",
+    content_dict=cylinder1_dict
 )
+
+all_obstacles = [sphere1, sphere2]
+# , wall1, cylinder1
+# TODO collision code can't check wall/cylinder shapes, only spheres 
+# (obstacle.radius() doesnt work on BoxObstacle objects)
