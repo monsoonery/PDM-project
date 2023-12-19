@@ -63,7 +63,10 @@ cylinder1 = CylinderObstacle(
     content_dict=cylinder1_dict
 )
 
-all_obstacles = [sphere1, sphere2]
-# , wall1, cylinder1
+collision_obstacles = [sphere1]
+#[sphere1, sphere2]
+# sphere1, sphere2, wall1, cylinder1
 # TODO collision code can't check wall/cylinder shapes, only spheres 
 # (obstacle.radius() doesnt work on BoxObstacle objects)
+
+decorative_obstacles = [wall1]
