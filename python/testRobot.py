@@ -7,7 +7,7 @@ from urdfenvs.scene_examples.goal import *
 from urdfenvs.urdf_common.urdf_env import UrdfEnv
 
 def run_test_robot(n_steps=10000, render=False, goal = [0,0,0,0,0]):
-    robots = [GenericUrdfReacher(urdf="PDM-project/URDF/testRobot.urdf", mode="vel"),]
+    robots = [GenericUrdfReacher(urdf="URDF/testRobot.urdf", mode="vel"),]
     env: UrdfEnv = gym.make("urdf-env-v0", dt=0.01, robots=robots, render=render)
 
     no_action = np.array([0,0,0,0,0])
