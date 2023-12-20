@@ -212,8 +212,71 @@ class RRTstar:
         }
 
         for i in range(1, n_expansions):
+            # Get a random configuration sample
             q_rand = self.get_random_sample()
+
+            # Check if this sample is in collision with an object
+            # if it is, we can stop immediately with this iteration
+            if self.in_collision(q_rand):   
+                print("this sample would be in collision :(")
+                continue
+
+            # Find the nearest node to connect this sample to
             key_q_near = min(self.nodes.keys(), key=lambda node: self.get_distance_of_two_nodes(q_rand, self.nodes[node]))
+            
+            # Check if there would be collision at any point when travelling from nearest node to sample node
+            # if there is, we can skip this iteration
+            delta = 10
+            q_deltas = np.linspace([0,0,0,0,0], q_rand, delta)
+
+            for q_delta in q_deltas:
+                if self.in_collision(self.nodes[key_q_near] + q_delta):  
+                    print("this sample would cause collision while moving :<")
+                    continue
+            
+            # If the code gets to this point, the random sample config is a valid and collision-free node
+            
+            # Add a new node to the node dictionary
+            key_q_rand = i
+            self.nodes[key_q_rand] = q_rand
+
+            # Add an edge to the edges dictionary
+            # If the nearest node doesn't have edges yet, create an entry in the dict
+            # else append the edge entry to the existing list of edges for the nearest node
+            distance_q_rand_to_q_near = self.get_distance_of_two_nodes(q_rand, self.nodes[key_q_near])
+            if key_q_near in self.edges:
+                self.edges[key_q_near].append((key_q_rand, distance_q_rand_to_q_near))
+            else:
+                self.edges[key_q_near] = [(key_q_rand, distance_q_rand_to_q_near)]
+
+            at_goal = self.check_if_configuration_is_at_goal(q_rand, goal_xyz)
+            #if at_goal:
+            #    break
+
+        print(f"edges: {self.edges}")
+        print(f"nodes: {self.nodes}")
+
+        return self.nodes, self.edges
+
+    def generate_graph_star(self, n_expansions=1000, initial_config=[0, 0, 0, 0, 0], goal_xyz=[0, 0, 0]):
+        self.goal_xyz = goal_xyz
+        self.initial_config = initial_config
+        
+        self.nodes = {
+            # DATA STRUCTURE: 
+            # NODE_ID: CONFIGURATION
+            0: initial_config
+        }
+
+        self.edges = {
+            # DATA STRUCTURE: 
+            # NODE_ID: [(NEXT_NODE_ID, DISTANCE/COST), (NEXT_NODE_ID, DISTANCE/COST), etc.]
+            # 0: [(1, 3.2), (2, 4.56)],
+        }
+
+        for i in range(1, n_expansions):
+            q_rand = self.get_random_sample()
+            #key_q_near = min(self.nodes.keys(), key=lambda node: self.get_distance_of_two_nodes(q_rand, self.nodes[node]))
 
             if not self.in_collision(q_rand): 
                 # TODO hier self-collision en path/travel collision check
@@ -222,13 +285,23 @@ class RRTstar:
                     key_q_rand = i
                     self.nodes[key_q_rand] = q_rand
 
+                    # TODO determine which node results in the shortest path from start to this node
+                    # get list of nodes within a certain radius
+
+                    # iterate over this list to get the cost from start to that node
+                        # requires an object that stores the shortest path from start to each node so far!
+
+                    #key_q_shortest_distance_to_start = #distance to near node + distance to q_rand
+
+
                     # Add an edge to the edges dictionary
                     # If the nearest node doesn't have edges yet, create an entry in the dict
                     # else append the edge entry to the existing list of edges for the nearest node
+                    distance_q_rand_to_q_near = self.get_distance_of_two_nodes(q_rand, self.nodes[key_q_near])
                     if key_q_near in self.edges:
-                        self.edges[key_q_near].append((key_q_rand, self.get_distance_of_two_nodes(q_rand, self.nodes[key_q_near])))
+                        self.edges[key_q_near].append((key_q_rand, distance_q_rand_to_q_near))
                     else:
-                        self.edges[key_q_near] = [(key_q_rand, self.get_distance_of_two_nodes(q_rand, self.nodes[key_q_near]))]
+                        self.edges[key_q_near] = [(key_q_rand, distance_q_rand_to_q_near)]
             else:
                 print("that sample causes collision")
             at_goal = self.check_if_configuration_is_at_goal(q_rand, goal_xyz)
@@ -263,6 +336,11 @@ class RRTstar:
         plt.scatter(x_values, y_values)
 
         # Plot shortest path
+
+        # Plot obstacles
+        for obstacle in self.obstacles:
+            circle = plt.Circle((obstacle.position()[0], obstacle.position()[1]), obstacle.radius(), color='grey')
+            plt.gca().add_patch(circle)
 
         # Plot start and goal points with different colors
         plt.scatter(x_values[0], y_values[0], color='red', label='Start Configuration')
@@ -300,6 +378,8 @@ class RRTstar:
         return x_values, y_values, q1_values, q2_values, q3_values
 
     def dijkstra_algorithm(self):
+        key_goal_node = np.max(self.nodes.keys())
+        print(key_goal_node)
         pass
         
 
