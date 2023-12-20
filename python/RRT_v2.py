@@ -38,17 +38,8 @@ class RRTstar:
         self.edges = {}
 
         self.vertices = {
-            # DATA STRUCTURE:
-            # node ID: [config/coordinates, cost-to-reach-from-start, parent node ID]
-            0:[self.initial_config, 0, 0]
                          }
 
-        self.distances = {
-            # DATA STRUCTURE:
-            # NODE_ID: [NODES THAT YOU NEED TO PASS ALONG THE WAY], COST
-            # 10: ([8, 3, 2, 0], 2.5)
-            0: ([], 0)
-        }
     
     # returns a random sample in configuration space
     def get_random_sample(self):
@@ -195,7 +186,7 @@ class RRTstar:
         return self.forward_kinematics(config, self.l1, self.l2, self.l3)
 
     # checks if a configuration is near the goal
-    def check_if_configuration_is_at_goal(self, config, goal):
+    def config_is_near_goal(self, config, goal):
         x1, y1, z1 = self.get_endpoint_coordinates(config)
         x2, y2, z2 = goal
         margin = self.room["margin_of_closeness_to_goal"]
@@ -213,6 +204,8 @@ class RRTstar:
     def generate_graph_RRT(self, n_expansions=1000, initial_config=[0, 0, 0, 0, 0], goal_xyz=[0, 0, 0]):
         self.goal_xyz = goal_xyz
         self.initial_config = initial_config
+
+        sample_threshold = 3
         
         self.nodes = {
             # DATA STRUCTURE: 
@@ -226,33 +219,67 @@ class RRTstar:
             # 0: [(1, 3.2), (2, 4.56)],
         }
 
+        self.vertices = {
+            # DATA STRUCTURE:
+            # node ID: [config/coordinates, cost-to-reach-from-start, parent node ID]
+            0:[self.initial_config, 0, 0]
+        }
+
+
+        node_id = 1
+        # Iterate until a path is found OR the max number of iterations is reached, whichever comes sooner
         for i in range(1, n_expansions):
-            # Get a random configuration sample
+            # [1] Get a random configuration sample
             q_rand = self.get_random_sample()
 
-            # Check if this sample is in collision with an object
-            # if it is, we can stop immediately with this iteration
-            if self.in_collision(q_rand):   
-                print("this sample would be in collision :(")
+            # [2] Find the nearest node this sample could be theoretically connected to
+            #     If q_rand is too far away from this node, discard this sample
+            key_q_near = min(self.nodes.keys(), key=lambda node: self.get_distance_of_two_nodes(q_rand, self.nodes[node]))
+            if self.get_distance_of_two_nodes(q_rand, self.nodes[key_q_near]) > sample_threshold:
+                #print("this sample would be too far away")
                 continue
 
-            # Find the nearest node to connect this sample to
-            key_q_near = min(self.nodes.keys(), key=lambda node: self.get_distance_of_two_nodes(q_rand, self.nodes[node]))
-
-            # Check if there would be collision at any point when travelling from nearest node to sample node
-            # if there is, we can skip this iteration
-            delta = 10
-            q_deltas = np.linspace([0,0,0,0,0], q_rand, delta)
-
+            # [3] Check if the robot will be in collision at any point between q_near and q_rand
+            #     by linearly interpolating 10 configurations between these two nodes
+            #     If there is collision, discard this sample
+            q_deltas = np.linspace([0,0,0,0,0], q_rand, 10)
+            invalid_q_rand = False
             for q_delta in q_deltas:
                 if self.in_collision(self.nodes[key_q_near] + q_delta):  
-                    print("this sample would cause collision while moving :<")
-                    continue
+                    #print("this sample would be in collision while moving :<")
+                    invalid_q_rand = True
+                    break
+            if invalid_q_rand: continue
+
+            # --------- If the code gets to this point, the randomly sampled config is valid and collision-free ---------
+            # --------- From here on out the STAR part of the algorithm is implemented: rewiring nodes ---------
+            q_new = q_rand
+
+
+            key_q_new = node_id
+
+            # [4] Cost to reach q_new from q_near = edge cost q_near --> q_new + lowest cost from start to q_near
+            edge_cost = self.get_distance_of_two_nodes(self.vertices[key_q_near][0], q_new)
+            q_new_minimum_cost = self.vertices[key_q_near] + edge_cost
+
+            # [5] Add an entry for this connection to the vertices dict
+            self.vertices[key_q_new] = [q_new, q_new_minimum_cost, key_q_near]
             
-            # If the code gets to this point, the random sample config is a valid and collision-free node
+            # [6] Collect nodes within the neighborhoo of q_new 
+            #     These are our candidates for rewiring
+            
+
+
+            self.vertices[key_q_new] = q_new
+
+
+            
+            
+
+            
             
             # Add a new node to the node dictionary
-            key_q_rand = i
+            key_q_rand = node_id
             self.nodes[key_q_rand] = q_rand
 
             # Add an edge to the edges dictionary
@@ -263,133 +290,20 @@ class RRTstar:
                 self.edges[key_q_near].append((key_q_rand, distance_q_rand_to_q_near))
             else:
                 self.edges[key_q_near] = [(key_q_rand, distance_q_rand_to_q_near)]
-
-            at_goal = self.check_if_configuration_is_at_goal(q_rand, goal_xyz)
-            if at_goal:
+            
+            # [] Stop when a valid path to the goal is found
+            #    The last added node's parents are connected to the start point in the (so far) shortest way
+            if self.config_is_near_goal(q_rand, goal_xyz):
                 break
+
+            node_id += 1
 
         #print(f"edges: {self.edges}")
         #print(f"nodes: {self.nodes}")
+        if i == n_expansions: print("Max number of iterations reached :(")
 
         return self.nodes, self.edges
-    
-    def find_shortest_path_from_start(self, key_goal):
-        shortest_path = 0
-        distance = 0
 
-        if key_goal not in self.distances.keys():
-            for key_node in self.nodes.keys():
-                dist = self.get_distance_of_two_nodes(self.nodes[key_goal], self.nodes[key_node])
-                self.distances[key_goal] = ([key_node, 0], dist)
-
-        else:
-            # If this goal is already in the list, retrieve the values
-            shortest_path, distance = self.distances[key_goal]
-        
-        print(f"shortest_path {shortest_path}")
-        print(f"distance: {distance}")
-
-        return shortest_path, distance
-                   
-    # Returns the keys of all nodes that are within a certain range of q_rand for RRT*
-    def find_neighbors(self, q_rand, neighborhood):
-        keys_q_neighbors = []
-
-        key_q_best = 0
-        shortest_distance_so_far = 100000
-
-        # find all neighbors
-        for key_node in self.nodes.keys():
-            distance = self.get_distance_of_two_nodes(self.nodes[key_node], q_rand)
-            if distance <= neighborhood:
-                keys_q_neighbors.append(key_node)
-
-        print(f"keys_q_neighbors: {keys_q_neighbors}")
-
-        # find best neighbor
-        for key_neighbor in keys_q_neighbors:
-            _, distance_start_neighbor = self.find_shortest_path_from_start(key_neighbor)
-
-            distance_neighbor_q_rand = self.get_distance_of_two_nodes(q_rand, self.nodes[key_neighbor])
-
-            if distance_start_neighbor + distance_neighbor_q_rand < shortest_distance_so_far:
-                key_q_best = key_neighbor
-                shortest_distance_so_far = 100000
-                        
-        return key_q_best, keys_q_neighbors
-
-    # Runs the RRT* algorithm to create a graph (tree)
-    def generate_graph_star(self, n_expansions=1000, initial_config=[0, 0, 0, 0, 0], goal_xyz=[0, 0, 0]):
-        self.goal_xyz = goal_xyz
-        self.initial_config = initial_config
-
-        neighborhood = 4
-        
-        self.nodes = {
-            # DATA STRUCTURE: 
-            # NODE_ID: CONFIGURATION
-            0: initial_config
-        }
-
-        self.edges = {
-            # DATA STRUCTURE: 
-            # NODE_ID: [(NEXT_NODE_ID, DISTANCE/COST), (NEXT_NODE_ID, DISTANCE/COST), etc.]
-            # 0: [(1, 3.2), (2, 4.56)],
-        }
-
-        for i in range(1, n_expansions):
-            # Get a random configuration sample
-            q_rand = self.get_random_sample()
-
-            # Check if this sample is in collision with an object
-            # if it is, we can stop immediately with this iteration
-            if self.in_collision(q_rand):   
-                print("this sample would be in collision :(")
-                continue
-
-            # Find the nearest node to connect this sample to
-            key_q_near = min(self.nodes.keys(), key=lambda node: self.get_distance_of_two_nodes(q_rand, self.nodes[node]))
-
-            # Find all neighbors of this sample
-            # Also find the node that, if q_rand was connected to it, results in the shortest path from start to q_rand
-            key_q_best, keys_q_neighbors = self.find_neighbors(q_rand, neighborhood)
-
-            # For each sample, find the lowest-cost route
-
-
-            # Check if there would be collision at any point when travelling from nearest node to sample node
-            # if there is, we can skip this iteration
-            delta = 10
-            q_deltas = np.linspace([0,0,0,0,0], q_rand, delta)
-
-            for q_delta in q_deltas:
-                if self.in_collision(self.nodes[key_q_near] + q_delta):  
-                    print("this sample would cause collision while moving :<")
-                    continue
-            
-            # If the code gets to this point, the random sample config is a valid and collision-free node
-            
-            # Add a new node to the node dictionary
-            key_q_rand = i
-            self.nodes[key_q_rand] = q_rand
-
-            # Add an edge to the edges dictionary
-            # If the nearest node doesn't have edges yet, create an entry in the dict
-            # else append the edge entry to the existing list of edges for the nearest node
-            distance_q_rand_to_q_near = self.get_distance_of_two_nodes(q_rand, self.nodes[key_q_near])
-            if key_q_near in self.edges:
-                self.edges[key_q_near].append((key_q_rand, distance_q_rand_to_q_near))
-            else:
-                self.edges[key_q_near] = [(key_q_rand, distance_q_rand_to_q_near)]
-
-            at_goal = self.check_if_configuration_is_at_goal(q_rand, goal_xyz)
-            if at_goal:
-                break
-
-        #print(f"edges: {self.edges}")
-        #print(f"nodes: {self.nodes}")
-
-        return self.nodes, self.edges
 
     def plot_results(self):
         # Get list of node id's (dict keys) for iterating over
@@ -402,6 +316,11 @@ class RRTstar:
         q2_values = [self.nodes[key_node][3] for key_node in keys_nodes]
         q3_values = [self.nodes[key_node][4] for key_node in keys_nodes]
         
+        # Plot obstacles
+        for obstacle in self.obstacles:
+            circle = plt.Circle((obstacle.position()[0], obstacle.position()[1]), obstacle.radius(), color='grey')
+            plt.gca().add_patch(circle)
+
         # Plot edges
         for key_node in self.edges.keys():
             for edge in self.edges[key_node]:
@@ -417,11 +336,7 @@ class RRTstar:
 
         # Plot shortest path
 
-        # Plot obstacles
-        for obstacle in self.obstacles:
-            circle = plt.Circle((obstacle.position()[0], obstacle.position()[1]), obstacle.radius(), color='grey')
-            plt.gca().add_patch(circle)
-
+        
         # Plot start and goal points with different colors
         plt.scatter(x_values[0], y_values[0], color='red', label='Start Configuration')
         plt.scatter(self.goal_xyz[0], self.goal_xyz[1], color='green', label='Goal Configuration')
@@ -465,7 +380,6 @@ if __name__ == "__main__":
     config_s = [0, 0, 0, 0, 1/2*np.pi]
     goal = [8, 8, 2]
 
-    #data_dict = 
     rrt.generate_graph_RRT(n_expansions=1000, initial_config=config_s, goal_xyz=goal)
     
     rrt.plot_results()
