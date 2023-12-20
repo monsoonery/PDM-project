@@ -40,7 +40,6 @@ class RRTstar:
         self.vertices = {
                          }
 
-    
     # returns a random sample in configuration space
     def get_random_sample(self):
         #x = random.randint(0, self.room["width"])
@@ -52,7 +51,7 @@ class RRTstar:
         q3 = random.uniform(-2*np.pi/3, 2*np.pi/3)
         return [x,y,q1,q2,q3]
 
-    # calculate the Euclidean distance between a point (sphere) on the robot and an obstacle
+    # calculates the Euclidean distance between a point (sphere) on the robot and all obstacle
     def intersects_any_obstacle(self, x, y, z, r):
         """
         Computes Euclidean distance between obstacles and robot segments, both represented 
@@ -86,61 +85,68 @@ class RRTstar:
             
         return flag
 
-    # determines if a configuration would be in collision with any objects
-    def in_collision(self, config):
+    # determines if steering towards a given configuration would cause collision with any objects
+    def in_collision(self, start_config, end_config):
         """
-        Using the 'union of spheres' method to calculate collisions between robot and obstacles
-        INPUT: config -> List containing configuration of the robot, format [x, y, q1, q2, q3] 
-        OUTPUT: boolean -> True = this configuration is in collision
+        Determines if the robot will be in collision with obstacles if it were to be steered from start_config
+        to end_config. The robot's "hitbox" is approximated using the 'union of spheres' method
+
+        INPUT: start_config -> List containing start configuration of the robot, format [x, y, q1, q2, q3] 
+               end_config -> List containing end configuration of the robot, format [x, y, q1, q2, q3]
+        OUTPUT: boolean -> if True, moving between the start and end configurations will result in collision
         """
 
-        ##### Extract values
-        x, y, q1, q2, q3 = config
+        # Steering function is a straight line in config space, so we can interpolate values 
+        # between the current config and the desired config
+        q_deltas = np.linspace(start_config, end_config, 10)
+        for config in q_deltas:
+            ##### Extract values
+            x, y, q1, q2, q3 = config
 
-        ##### Step 1: Check x and y collision (mobile base only)
-        if (verbose): print("~~~~~~~~ Currently checking x and y collision ~~~~~~~~")
-        x_robot = x
-        y_robot = y
-        z_robot = self.l1 / 2 # center of base
-        r_robot = self.l1 / 2 # value taken from URDF, assuming the base is just 1 sphere (extremely simplified method)
+            ##### Step 1: Check x and y collision (mobile base only)
+            if (verbose): print("~~~~~~~~ Currently checking x and y collision ~~~~~~~~")
+            x_robot = x
+            y_robot = y
+            z_robot = self.l1 / 2 # center of base
+            r_robot = self.l1 / 2 # value taken from URDF, assuming the base is just 1 sphere (extremely simplified)
 
-        if self.intersects_any_obstacle(x_robot, y_robot, z_robot, r_robot):
-            if (verbose): print("Collision!")
-            return True
-        else:
-            if (verbose): print("No collision :)")
-
-        ##### Step 2: Check first link collision (has dimension l2, beetje ongelukkige naam i know)
-        if (verbose): print("~~~~~~~~ Currently checking collision with first link ~~~~~~~~")
-        l2_division = 7 # in how many spheres will l2 be divided?
-
-        for l2 in np.linspace(0, self.l2, l2_division):
-            if (verbose): print(f"~~~~~~~ l2 = {l2}")
-            x_l2, y_l2, z_l2 = self.forward_kinematics(config, self.l1, l2, 0)
-            r_l2 = 0.1 # from URDF
-
-            if self.intersects_any_obstacle(x_l2, y_l2, z_l2, r_l2):
+            if self.intersects_any_obstacle(x_robot, y_robot, z_robot, r_robot):
                 if (verbose): print("Collision!")
                 return True
             else:
                 if (verbose): print("No collision :)")
 
-        ##### Step 3: Check second link collision (has dimension l3)
-        if (verbose): print("~~~~~~~~ Currently checking collision with second link ~~~~~~~~")
-        l3_division = 6
+            ##### Step 2: Check first link collision (has dimension l2, beetje ongelukkige naam i know)
+            if (verbose): print("~~~~~~~~ Currently checking collision with first link ~~~~~~~~")
+            l2_division = 7 # in how many spheres will l2 be divided?
 
-        for l3 in np.linspace(0, self.l3, l3_division):
-            if (verbose): print(f"~~~~~~~ l3 = {l3}")
-            x_l3, y_l3, z_l3 = self.forward_kinematics(config, self.l1, self.l2, l3)
-            r_l3 = 0.1 # from URDF
+            for l2 in np.linspace(0, self.l2, l2_division):
+                if (verbose): print(f"~~~~~~~ l2 = {l2}")
+                x_l2, y_l2, z_l2 = self.forward_kinematics(config, self.l1, l2, 0)
+                r_l2 = 0.1 # from URDF
 
-            if self.intersects_any_obstacle(x_l3, y_l3, z_l3, r_l3):
-                if (verbose): print("Collision!")
-                return True
-            else:
-                if (verbose): print("No collision :)")
-        
-        # If none of the above ever return True, then there must be no collisions
+                if self.intersects_any_obstacle(x_l2, y_l2, z_l2, r_l2):
+                    if (verbose): print("Collision!")
+                    return True
+                else:
+                    if (verbose): print("No collision :)")
+
+            ##### Step 3: Check second link collision (has dimension l3)
+            if (verbose): print("~~~~~~~~ Currently checking collision with second link ~~~~~~~~")
+            l3_division = 6
+
+            for l3 in np.linspace(0, self.l3, l3_division):
+                if (verbose): print(f"~~~~~~~ l3 = {l3}")
+                x_l3, y_l3, z_l3 = self.forward_kinematics(config, self.l1, self.l2, l3)
+                r_l3 = 0.1 # from URDF
+
+                if self.intersects_any_obstacle(x_l3, y_l3, z_l3, r_l3):
+                    if (verbose): print("Collision!")
+                    return True
+                else:
+                    if (verbose): print("No collision :)")
+            
+        # If none of the q_delta's ever return True, then there must be no collisions
         return False
     
     # calculates distance between two nodes
@@ -235,39 +241,36 @@ class RRTstar:
 
             # [2] Find the nearest node this sample could be theoretically connected to
             #     If q_rand is too far away from this node, discard this sample
-            key_q_near = min(self.nodes.keys(), key=lambda node: self.get_distance_of_two_nodes(q_rand, self.nodes[node]))
-            if self.get_distance_of_two_nodes(q_rand, self.nodes[key_q_near]) > sample_threshold:
+            key_q_near = min(self.vertices.keys(), 
+                             key=lambda node: self.get_distance_of_two_nodes(
+                                q_rand, self.vertices[node][0]
+                                )
+                             )
+            if self.get_distance_of_two_nodes(q_rand, self.vertices[key_q_near][0]) > sample_threshold:
                 #print("this sample would be too far away")
                 continue
 
             # [3] Check if the robot will be in collision at any point between q_near and q_rand
             #     by linearly interpolating 10 configurations between these two nodes
             #     If there is collision, discard this sample
-            q_deltas = np.linspace([0,0,0,0,0], q_rand, 10)
-            invalid_q_rand = False
-            for q_delta in q_deltas:
-                if self.in_collision(self.nodes[key_q_near] + q_delta):  
-                    #print("this sample would be in collision while moving :<")
-                    invalid_q_rand = True
-                    break
-            if invalid_q_rand: continue
-
+            if self.in_collision(self.vertices[key_q_near][0], q_rand):  
+                #print("this sample would be in collision (possibly while moving) :<")
+                continue
 
             # --------- If the code gets to this point, the randomly sampled config is valid and collision-free ---------
             q_new = q_rand
             # --------- From here on out the STAR part of the algorithm is implemented: rewiring nodes ---------
 
-
             # [4] Cost to reach q_new from q_near = edge cost q_near --> q_new + lowest cost from start to q_near
             edge_cost = self.get_distance_of_two_nodes(self.vertices[key_q_near][0], q_new)
-            q_new_minimum_cost = self.vertices[key_q_near][1] + edge_cost
+
+            q_near_to_q_new_cost = self.vertices[key_q_near][1] + edge_cost
 
             # [5] Add an entry for this connection to the vertices dict
             key_q_new = node_id
-            self.vertices[key_q_new] = [q_new, q_new_minimum_cost, key_q_near]
+            self.vertices[key_q_new] = [q_new, q_near_to_q_new_cost, key_q_near]
             
-            # [6] Collect nodes within the neighborhood of q_new 
-            #     These are our candidates for rewiring
+            # [6] Find all neighbors of q_new, these are  candidates for rewiring 
             keys_q_neighbors = []
             for key_node in self.vertices.keys():
                 distance = self.get_distance_of_two_nodes(self.vertices[key_node][0], q_new)
@@ -277,6 +280,18 @@ class RRTstar:
             #print(f"neighbors: {keys_q_neighbors}")
 
             # [7] Check if q_new can be connected to a different node with a lower total cost than its current connection
+            for key_q_neighbor in keys_q_neighbors:
+                start_to_q_neighbor_cost = self.vertices[key_q_neighbor][2]
+                q_neighbor_to_q_new_cost = self.get_distance_of_two_nodes(self.vertices[key_q_neighbor][0], q_new)
+                # "if cost of start->neighbor->q_new is smaller than the cost currently registered for q_new"
+                if (start_to_q_neighbor_cost + q_neighbor_to_q_new_cost < self.vertices[key_q_new][1]):
+                    # TODO CHECK IF THE REWIRED PATH WOULD CAUSE A COLLISION
+                    if 1:
+                        # update q_new's cost and parent
+                        print(self.vertices[key_q_new][1])
+                        self.vertices[key_q_new][2] = key_q_neighbor
+                        self.vertices[key_q_new][1] = start_to_q_neighbor_cost + q_neighbor_to_q_new_cost
+            print("----")
 
             # --------------------------- NOTE TO SELF DE SHIT HIERONDER NIET AANRAKEN TOT DE SHIT HIERBOVEN WERKT AUB -----------------------------
             
@@ -306,7 +321,7 @@ class RRTstar:
 
         return self.nodes, self.edges
 
-
+    # plots the graph
     def plot_results(self):
         # Get list of node id's (dict keys) for iterating over
         keys_nodes = self.nodes.keys()
@@ -355,33 +370,16 @@ class RRTstar:
         plt.show()
         return
 
-    # Extract configurations from the data
-    def extract_data(self):
-        x_values = [self.initial_config[0]]
-        y_values = [self.initial_config[1]]
-        q1_values = [self.initial_config[2]]
-        q2_values = [self.initial_config[3]]
-        q3_values = [self.initial_config[4]]
-
-        for key in self.tree.keys():
-            key = ast.literal_eval(key)
-            x_values.append(key[0])
-            y_values.append(key[1]) 
-            q1_values.append(key[2])
-            q2_values.append(key[3]) 
-            q3_values.append(key[4])
-
-        return x_values, y_values, q1_values, q2_values, q3_values
-
         
 
 if __name__ == "__main__":
     rrt = RRTstar(0.4, 0.7, 0.6)
 
     # start configuration
-    config_s = [0, 0, 0, 0, 1/2*np.pi]
+    config_s = [0, 0, 0, 0, (1/2)*np.pi]
     goal = [8, 8, 2]
 
+    #rrt.in_collision(config_s, [-2, 2, 8.8, -np.pi, 1/2*np.pi])
     rrt.generate_graph_RRT(n_expansions=1000, initial_config=config_s, goal_xyz=goal)
     
     rrt.plot_results()
