@@ -222,9 +222,10 @@ class RRTstar:
         self.vertices = {
             # DATA STRUCTURE:
             # node ID: [config/coordinates, cost-to-reach-from-start, parent node ID]
-            0:[self.initial_config, 0, 0]
+            0: [self.initial_config, 0, 0]
         }
 
+        neighborhood = 3
 
         node_id = 1
         # Iterate until a path is found OR the max number of iterations is reached, whichever comes sooner
@@ -251,32 +252,33 @@ class RRTstar:
                     break
             if invalid_q_rand: continue
 
+
             # --------- If the code gets to this point, the randomly sampled config is valid and collision-free ---------
-            # --------- From here on out the STAR part of the algorithm is implemented: rewiring nodes ---------
             q_new = q_rand
+            # --------- From here on out the STAR part of the algorithm is implemented: rewiring nodes ---------
 
-
-            key_q_new = node_id
 
             # [4] Cost to reach q_new from q_near = edge cost q_near --> q_new + lowest cost from start to q_near
             edge_cost = self.get_distance_of_two_nodes(self.vertices[key_q_near][0], q_new)
-            q_new_minimum_cost = self.vertices[key_q_near] + edge_cost
+            q_new_minimum_cost = self.vertices[key_q_near][1] + edge_cost
 
             # [5] Add an entry for this connection to the vertices dict
+            key_q_new = node_id
             self.vertices[key_q_new] = [q_new, q_new_minimum_cost, key_q_near]
             
-            # [6] Collect nodes within the neighborhoo of q_new 
+            # [6] Collect nodes within the neighborhood of q_new 
             #     These are our candidates for rewiring
-            
+            keys_q_neighbors = []
+            for key_node in self.vertices.keys():
+                distance = self.get_distance_of_two_nodes(self.vertices[key_node][0], q_new)
+                if distance <= neighborhood:
+                    keys_q_neighbors.append(key_node)
 
+            #print(f"neighbors: {keys_q_neighbors}")
 
-            self.vertices[key_q_new] = q_new
+            # [7] Check if q_new can be connected to a different node with a lower total cost than its current connection
 
-
-            
-            
-
-            
+            # --------------------------- NOTE TO SELF DE SHIT HIERONDER NIET AANRAKEN TOT DE SHIT HIERBOVEN WERKT AUB -----------------------------
             
             # Add a new node to the node dictionary
             key_q_rand = node_id
