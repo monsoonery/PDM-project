@@ -8,3 +8,4 @@ report_images/ewaja3d.png
 report_images/ewaja3d2.png
 report_images/ewajajointless.png
 python/__pycache__/obstacles.cpython-311.pyc
+*.pyc
