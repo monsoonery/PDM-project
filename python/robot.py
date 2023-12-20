@@ -1,4 +1,6 @@
 import numpy as np
+import random
+import time
 
 class Robot:
     def __init__(self, env, l1, l2, l3):
@@ -61,7 +63,7 @@ class Robot:
         return x,y
     
     # Move manipulator (arm) step by step
-    def move_angle(self, index, angle_between_goals, printen = False):
+    def move_angle_continous(self, index, angle_between_goals, printen = False):
         if (self.position_ob[index] >= self.goal[index]-self.interval and self.position_ob[index] <= self.goal[index]+self.interval):
             q = 0
             self.reached[index] = True
@@ -87,6 +89,15 @@ class Robot:
             
         return q
     
+    def move_angle_revolute(self, index):
+        if (self.position_ob[index] >= self.goal[index]-self.interval and self.position_ob[index] <= self.goal[index]+self.interval):
+            q = 0
+        elif (self.position_ob[index] < self.goal[index]): q = self.speed
+        elif (self.position_ob[index] > self.goal[index]): q = -self.speed
+        else: q = 0 # Should never happen
+
+        return q
+
     # Obtain distances needed for straight-line steering function
     def obtain_distances(self):
         distance_goal = []
@@ -143,8 +154,8 @@ class Robot:
                 break
 
             x,y = self.move_x_y(distance_goal, largest_distance)
-            q0 = self.move_angle(2, distance_goal[2])
-            q1 = self.move_angle(3, distance_goal[3])
-            q2 = self.move_angle(4, distance_goal[4])
+            q0 = self.move_angle_continous(2, distance_goal[2])
+            q1 = self.move_angle_revolute(3)
+            q2 = self.move_angle_revolute(4)
             
             self.ob, *_ = self.env.step(np.array([x,y,q0,q1,q2])) 
