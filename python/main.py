@@ -19,8 +19,8 @@ if __name__ == "__main__":
     # rrt = RRTstar.RRTstar(l1, l2, l3)
     
     for i in range(15):
-        x = random.uniform(-1.2,1.2)
-        y = random.uniform(-1.2,1.2)
+        x = random.uniform(-10,10)
+        y = random.uniform(-10,10)
         q0 = random.uniform(-np.pi,np.pi)
         q1 = random.uniform(-np.pi/2,np.pi/2)
         q2 = random.uniform(-2*np.pi/3,2*np.pi/3)
