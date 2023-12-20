@@ -220,6 +220,7 @@ class RRTstar:
             # 0: [(1, 3.2), (2, 4.56)],
         }
 
+        node_id_counter = 1
         for i in range(1, n_expansions):
             # Get a random configuration sample
             q_rand = self.get_random_sample()
@@ -246,7 +247,8 @@ class RRTstar:
             # If the code gets to this point, the random sample config is a valid and collision-free node
             
             # Add a new node to the node dictionary
-            key_q_rand = i
+            key_q_rand = node_id_counter
+            node_id_counter += 1
             self.nodes[key_q_rand] = q_rand
 
             # Add an edge to the edges dictionary
@@ -330,7 +332,8 @@ class RRTstar:
             # NODE_ID: [(NEXT_NODE_ID, DISTANCE/COST), (NEXT_NODE_ID, DISTANCE/COST), etc.]
             # 0: [(1, 3.2), (2, 4.56)],
         }
-
+        
+        node_id_counter = 1
         for i in range(1, n_expansions):
             # Get a random configuration sample
             q_rand = self.get_random_sample()
@@ -364,7 +367,8 @@ class RRTstar:
             # If the code gets to this point, the random sample config is a valid and collision-free node
             
             # Add a new node to the node dictionary
-            key_q_rand = i
+            key_q_rand = node_id_counter
+            node_id_counter += 1
             self.nodes[key_q_rand] = q_rand
 
             # Add an edge to the edges dictionary
@@ -380,9 +384,9 @@ class RRTstar:
             if at_goal:
                 break
 
-        #print(f"edges: {self.edges}")
-        #print(f"nodes: {self.nodes}")
-
+        print(f"edges: {self.edges}")
+        print(f"nodes: {self.nodes}")
+    
         return self.nodes, self.edges
 
     def plot_results(self):
@@ -460,7 +464,7 @@ if __name__ == "__main__":
     goal = [8, 8, 2]
 
     #data_dict = 
-    rrt.generate_graph_RRT(n_expansions=1000, initial_config=config_s, goal_xyz=goal)
+    rrt.generate_graph_star(n_expansions=1000, initial_config=config_s, goal_xyz=goal)
     
     rrt.plot_results()
 
