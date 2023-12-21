@@ -37,6 +37,12 @@ class RRTstar:
         self.nodes = {}
         self.edges = {}
 
+        self.vertices = {
+            # DATA STRUCTURE:
+            # node ID: [config/coordinates, cost-to-reach-from-start, parent node ID]
+            0:[self.initial_config, 0, 0]
+                         }
+
         self.distances = {
             # DATA STRUCTURE:
             # NODE_ID: [NODES THAT YOU NEED TO PASS ALONG THE WAY], COST
