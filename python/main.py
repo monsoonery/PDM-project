@@ -1,5 +1,6 @@
 import time
 import matplotlib.pyplot as plt
+import random
 
 import robot
 import RRT_v2 as RRTstar
