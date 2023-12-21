@@ -1,5 +1,4 @@
 import numpy as np
-import random
 import time
 
 class Robot:
@@ -21,12 +20,9 @@ class Robot:
         self.goal = [0,0,0,0,0]
         self.prev_goal = [0,0,0,0,0]
         self.reached = [False, False, False, False, False]
-        self.speed = 0.5
-        self.interval = 0.03
+        self.speed = 1.5
+        self.interval = 0.01
         self.position_ob = self.ob["robot_0"]["joint_state"]["position"]
-
-        # Robot collision flags
-        self.self_collision = False
     
     def angle_interval(self, q):
         while q <= -np.pi: q = q+2*np.pi
@@ -35,7 +31,7 @@ class Robot:
         return q
     
     # Move mobile platform step by step
-    def move_x_y(self, distance_goal, largest_distance):
+    def move_x_y(self, distance_goal, time_to_reach_goal):
         if (self.position_ob[0] >= self.goal[0]-self.interval and self.position_ob[0] <= self.goal[0]+self.interval and 
             self.position_ob[1] >= self.goal[1]-self.interval and self.position_ob[1] <= self.goal[1]+self.interval): 
             # print("            2")
@@ -44,56 +40,64 @@ class Robot:
 
         elif (self.position_ob[0] >= self.goal[0]-self.interval and self.position_ob[0] <= self.goal[0]+self.interval and not (self.position_ob[1] >= self.goal[1]-self.interval and self.position_ob[1] <= self.goal[1]+self.interval)):
             # print("            3")
-            if self.position_ob[1] >= self.goal[1]-self.interval: y = -self.speed
-            elif self.position_ob[1] <= self.goal[1]+self.interval: y = self.speed
+            if self.position_ob[1] >= self.goal[1]-self.interval: y = distance_goal[1]/time_to_reach_goal
+            elif self.position_ob[1] <= self.goal[1]+self.interval: y = distance_goal[1]/time_to_reach_goal
             else: y = 0
             x = 0
 
         elif (self.position_ob[1] >= self.goal[1]-self.interval and self.position_ob[1] <= self.goal[1]+self.interval and not (self.position_ob[0] >= self.goal[0]-self.interval and self.position_ob[0] <= self.goal[0]+self.interval)):
             # print("            4")
-            if self.position_ob[0] >= self.goal[0]-self.interval: x = -self.speed
-            elif self.position_ob[0] <= self.goal[0]+self.interval: x = self.speed
+            if self.position_ob[0] >= self.goal[0]-self.interval: x = distance_goal[0]/time_to_reach_goal
+            elif self.position_ob[0] <= self.goal[0]+self.interval: x = distance_goal[0]/time_to_reach_goal
             else: x = 0
             y = 0
             
         else:
             # print("            5")
-            x = self.speed*distance_goal[0]/largest_distance
-            y = self.speed*distance_goal[1]/largest_distance
+            x = distance_goal[0]/time_to_reach_goal
+            y = distance_goal[1]/time_to_reach_goal
         return x,y
     
     # Move manipulator (arm) step by step
-    def move_angle_continous(self, index, angle_between_goals, printen = False):
+    def move_angle_continous(self, index, angle_between_goals, distance_goal, time_to_reach_goal):
         if (self.position_ob[index] >= self.goal[index]-self.interval and self.position_ob[index] <= self.goal[index]+self.interval):
             q = 0
             self.reached[index] = True
-            # if printen == True: print("            6 = ", q)
+            # print("            6 = ", q)
 
-        elif (angle_between_goals >= np.pi and not self.reached[index]):
-            q = -self.speed
-            # if printen == True: print("            7 = ", q)
+        elif (angle_between_goals[index] >= np.pi and not self.reached[index]):
+            q = distance_goal[index]/time_to_reach_goal
+            # print("            7 = ", index)
 
-        elif (angle_between_goals <= np.pi and not self.reached[index]):
-            q = self.speed
-            # if printen == True: print("            8 = ", q)
+        elif (angle_between_goals[index] <= np.pi and not self.reached[index]):
+            q = distance_goal[index]/time_to_reach_goal
+            # print("            8 = ", index)
         
-        elif (self.reached[index] and self.position_ob[index] >= self.goal[index]): 
+        elif (self.reached[index] and self.position_ob[index] >= self.goal[index]+self.interval): 
             q = -self.speed
-            # if printen == True: print("            9 = ", q)
+            # print("            9 = ", index)
 
-        elif (self.reached[index] and self.position_ob[index] <= self.goal[index]): 
+        elif (self.reached[index] and self.position_ob[index] <= self.goal[index]-self.interval): 
             q = self.speed
-            # if printen == True: print("           10 = ", q)
+            # print("           10 = ", index)
 
         else: q = 0 # Should never happen
             
         return q
     
-    def move_angle_revolute(self, index):
+    def move_angle_revolute(self, index, distance_goal, time_to_reach_goal):
         if (self.position_ob[index] >= self.goal[index]-self.interval and self.position_ob[index] <= self.goal[index]+self.interval):
             q = 0
-        elif (self.position_ob[index] < self.goal[index]): q = self.speed
-        elif (self.position_ob[index] > self.goal[index]): q = -self.speed
+            # print("           11 = ", index)
+
+        elif (self.position_ob[index] < self.goal[index]): 
+            q = distance_goal[index]/time_to_reach_goal
+            # print("           12 = ", index)
+
+        elif (self.position_ob[index] > self.goal[index]): 
+            q = distance_goal[index]/time_to_reach_goal
+            # print("           13 = ", index)
+
         else: q = 0 # Should never happen
 
         return q
@@ -101,13 +105,18 @@ class Robot:
     # Obtain distances needed for straight-line steering function
     def obtain_distances(self):
         distance_goal = []
+        angle_between_goals = [0,0]
 
         # for x and y value: determine absolute distance and store in distance_goal
-        for item in range(2):
+        for item in range(5):
             distance_goal.append(self.goal[item]-self.prev_goal[item])
 
         # determine if x or y is the largest distance to cross
-        largest_distance = max(map(abs,distance_goal)) 
+        largest_distance = max(map(abs,distance_goal)) # for q1, q2, q3: determine absolute 'distance' and store in distance_goal
+        time_to_reach_goal = largest_distance/self.speed
+
+        # print(['%.2f' % elem for elem in distance_goal], largest_distance, time_to_reach_goal)
+        # print(['%.2f' % elem for elem in self.goal])
 
         # for q1, q2, q3: determine absolute 'distance' and store in distance_goal
         for i in range(2,5):
@@ -118,26 +127,23 @@ class Robot:
             # if difference < 0, add 2pi
             while temp < 0:
                 temp = temp + 2*np.pi
-            distance_goal.append(temp)
+            angle_between_goals.append(temp)
 
-        return distance_goal, largest_distance
+        # time.sleep(1)
+        return distance_goal, angle_between_goals, largest_distance, time_to_reach_goal
     
     # Main function that moves entire mobile manipulator from point one to point two (the "goal")
     def move_to_goal(self, goal):
         self.goal = goal
         self.reached = [False, False, False, False, False]
-        distance_goal, largest_distance = self.obtain_distances()
+        distance_goal, angle_between_goals, largest_distance, time_to_reach_goal = self.obtain_distances()
         
-        self.self_collision = False
-        #self.check_self_collision_goal()
-
         for _ in range(10000):
             self.position_ob = self.ob["robot_0"]["joint_state"]["position"]
             self.position_ob[2] = self.angle_interval(self.position_ob[2])
             self.position_ob[3] = self.angle_interval(self.position_ob[3])
             self.position_ob[4] = self.angle_interval(self.position_ob[4])
-            #print(self.position_ob, self.goal)
-            #self.check_self_collision_pose()
+            # print(['%.2f' % elem for elem in self.position_ob],['%.2f' % elem for elem in self.goal])
             
             if (self.position_ob[0] >= self.goal[0]-self.interval and self.position_ob[0] <= self.goal[0]+self.interval and 
                 self.position_ob[1] >= self.goal[1]-self.interval and self.position_ob[1] <= self.goal[1]+self.interval and
@@ -149,13 +155,9 @@ class Robot:
                 # print("            1")
                 break
 
-            if (self.self_collision == True):
-                self.ob, *_ = self.env.step(self.no_action)
-                break
-
-            x,y = self.move_x_y(distance_goal, largest_distance)
-            q0 = self.move_angle_continous(2, distance_goal[2])
-            q1 = self.move_angle_revolute(3)
-            q2 = self.move_angle_revolute(4)
+            x,y = self.move_x_y(distance_goal, time_to_reach_goal)
+            q0 = self.move_angle_continous(2, angle_between_goals, distance_goal, time_to_reach_goal)
+            q1 = self.move_angle_revolute(3, distance_goal, time_to_reach_goal)
+            q2 = self.move_angle_revolute(4, distance_goal, time_to_reach_goal)
             
             self.ob, *_ = self.env.step(np.array([x,y,q0,q1,q2])) 

@@ -34,5 +34,14 @@ if __name__ == "__main__":
          print(f"current config: {config}")
          coffeebot.move_to_goal(goal = config)
          time.sleep(1)
+    
+    for i in range(15):
+        x = random.uniform(-10,10)
+        y = random.uniform(-10,10)
+        q0 = random.uniform(-np.pi,np.pi)
+        q1 = random.uniform(-np.pi/2,np.pi/2)
+        q2 = random.uniform(-2*np.pi/3,2*np.pi/3)
+        coffeebot.move_to_goal(goal = [x, y, q0, q1 , q2])
+        time.sleep(1)
 
     env.close_simulation()
