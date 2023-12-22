@@ -1,5 +1,4 @@
 import numpy as np
-import time
 
 class Robot:
     def __init__(self, env, l1, l2, l3):
