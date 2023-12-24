@@ -200,7 +200,7 @@ class RRTstar:
 
     # This function updates the pyplot to show the RRT* expansion live
     def animate(self):
-        plt.cla()
+        plt.clf()
 
         # Extract datapoints from node list: get x, y, etc of each node
         keys_nodes = self.vertices.keys()
@@ -253,11 +253,11 @@ class RRTstar:
             if i == 0:
                 plt.plot([parent_node[0], child_node[0]], 
                         [parent_node[1], child_node[1]], 
-                        linewidth=1.5, color='blue', label='Shortest path')
+                        linewidth=1.5, color='m', label='Shortest path')
             else:
                 plt.plot([parent_node[0], child_node[0]], 
                         [parent_node[1], child_node[1]], 
-                        linewidth=1.5, color='blue')
+                        linewidth=1.5, color='m')
 
         # Plot start and goal points with different colors
         if x_values: plt.scatter(x_values[0], y_values[0], 
@@ -269,11 +269,11 @@ class RRTstar:
 
         # Plot goal margin
         margin = self.room["margin_of_closeness_to_goal"]
-        square = plt.Rectangle((self.goal_xyz[0] - margin, self.goal_xyz[1] - margin), 
-                            2 * margin, 2 * margin,
+        circle = plt.Circle((self.goal_xyz[0], self.goal_xyz[1]), 
+                            margin,
                             color='green', fill=False, 
                             label='Goal margin')
-        plt.gca().add_patch(square)
+        plt.gca().add_patch(circle)
 
         plt.title('RRT* graph (LIVE!)')
         plt.xlabel('x (m)')
@@ -292,46 +292,37 @@ class RRTstar:
             print("Can't determine shortest path: Run RRT first using the run() method!")
             return []
         
-        # If we did run the algorithm but havent calculated a path yet, let's do it!
-        if not self.shortest_path_configs:
-            # Find all nodes whose is_near_goal property is true
-            keys_nodes_near_goal = [key for key, value in self.vertices.items() if value[3] == True]
-            vertices_near_goal = {key: value for key, value in self.vertices.items() if key in keys_nodes_near_goal}
+        # Find all nodes whose is_near_goal property is true
+        keys_nodes_near_goal = [key for key, value in self.vertices.items() if value[3] == True]
+        vertices_near_goal = {key: value for key, value in self.vertices.items() if key in keys_nodes_near_goal}
 
-            # If the list is empty, RRT* failed to find a solution and must be ran again
-            print(keys_nodes_near_goal)
-            if not keys_nodes_near_goal:
-                print("Can't determine shortest path: no solution was found. Try to run RRT* again with a higher number of iterations")
-                return []
-            
-            # From this list, find the node with the smallest cost/distance from start to goal
-            key_node_with_smallest_cost = min(vertices_near_goal, key=lambda x: vertices_near_goal[x][2])
+        # If the list is empty, RRT* has not found a solution
+        if not keys_nodes_near_goal:
+            print("Can't determine shortest path: no solution was found (yet). Try to run RRT* again with a higher number of iterations")
+            return []
+        
+        # From this list, find the node with the smallest cost/distance from start to goal
+        key_node_with_smallest_cost = min(vertices_near_goal, key=lambda x: vertices_near_goal[x][2])
 
-            print(key_node_with_smallest_cost)
-            print(self.vertices[key_node_with_smallest_cost][0])
-            print(self.vertices[key_node_with_smallest_cost][1])
-            print(self.vertices[key_node_with_smallest_cost][2])
-            print(self.vertices[key_node_with_smallest_cost][3])
+        # Search backwards from goal to start to find all the configs for the robot to follow
+        key_child_node = key_node_with_smallest_cost
+        key_parent_node = self.vertices[key_child_node][2]
+        self.shortest_path_keys = []
+        while (key_parent_node != 0):
+            self.shortest_path_keys.append(key_child_node)
 
-            # Search backwards from goal to start to find all the configs for the robot to follow
-            key_child_node = key_node_with_smallest_cost
+            # Retrieve the parent node key from the child node's dict entry
             key_parent_node = self.vertices[key_child_node][2]
-            self.shortest_path_keys = []
-            while (key_parent_node != 0):
-                self.shortest_path_keys.append(key_child_node)
 
-                # Retrieve the parent node key from the child node's dict entry
-                key_parent_node = self.vertices[key_child_node][2]
+            # Set the child node key as the parent node for the next iteration
+            key_child_node = key_parent_node
 
-                # Set the child node key as the parent node for the next iteration
-                key_child_node = key_parent_node
+        for key in self.shortest_path_keys:
+            self.shortest_path_configs.append(self.vertices[key][0])
 
-            for key in self.shortest_path_keys:
-                self.shortest_path_configs.append(self.vertices[key][0])
-
-            # Nodes/configs are listed from goal to start due to backwards search, so they must be reversed
-            self.shortest_path_keys.reverse()
-            self.shortest_path_configs.reverse()
+        # Nodes/configs are listed from goal to start due to backwards search, so they must be reversed
+        self.shortest_path_keys.reverse()
+        self.shortest_path_configs.reverse()
                 
         return self.shortest_path_configs
 
@@ -339,18 +330,19 @@ class RRTstar:
     def plot_results(self, also_plot_normal_RRT=False):
         num_iterations = 1 + also_plot_normal_RRT
 
-        for i in range(1, num_iterations+1):
-            plt.figure(i)
+        for iter in range(1, num_iterations+1):
+            plt.ioff()
+            plt.figure(iter+1)
 
             # Extract datapoints from node list: get x, y, etc of each node
-            if i == 1:
+            if iter == 1:
                 keys_nodes = self.vertices.keys()
                 x_values = [self.vertices[key_node][0][0] for key_node in keys_nodes]
                 y_values = [self.vertices[key_node][0][1] for key_node in keys_nodes]
                 q1_values = [self.vertices[key_node][0][2] for key_node in keys_nodes]
                 q2_values = [self.vertices[key_node][0][3] for key_node in keys_nodes]
                 q3_values = [self.vertices[key_node][0][4] for key_node in keys_nodes]
-            elif i == 2:
+            elif iter == 2:
                 keys_nodes = self.nodes.keys()
                 x_values = [self.nodes[key_node][0] for key_node in keys_nodes]
                 y_values = [self.nodes[key_node][1] for key_node in keys_nodes]
@@ -371,9 +363,8 @@ class RRTstar:
             plt.scatter(x_values, y_values, s=15, label='Nodes')
 
             # Plot edges
-            if i == 1:
-                flag = False
-                for key_node in keys_nodes:
+            if iter == 1:
+                for i, key_node in enumerate(keys_nodes):
                     # Retrieve the parent node key from the child node's dict entry
                     key_parent_node = self.vertices[key_node][2]
 
@@ -383,16 +374,15 @@ class RRTstar:
                     parent_node = self.vertices[key_parent_node][0]
 
                     # Plot an edge between child and parent
-                    if not flag:
+                    if i == 0:
                         plt.plot([parent_node[0], child_node[0]], 
                                 [parent_node[1], child_node[1]], 
                                 color='black', linewidth=1, label = "Edges")
-                        flag = True
                     else:
                         plt.plot([parent_node[0], child_node[0]], 
                                 [parent_node[1], child_node[1]], 
                                 color='black', linewidth=1)
-            elif i == 2:
+            elif iter == 2:
                 for key_node in self.edges.keys():
                     for edge in self.edges[key_node]:
                         key_next_node = edge[0]
@@ -403,9 +393,8 @@ class RRTstar:
                         plt.plot([current_node[0], next_node[0]], [current_node[1], next_node[1]], 'k-')
 
             # Plot shortest path
-            if i == 1:
-                flag = False
-                for key_child_node in self.shortest_path_keys:
+            if iter == 1:
+                for i, key_child_node in enumerate(self.shortest_path_keys):
                     # Retrieve the parent node key from the child node's dict entry
                     key_parent_node = self.vertices[key_child_node][2]
 
@@ -414,15 +403,14 @@ class RRTstar:
                     parent_node = self.vertices[key_parent_node][0]
 
                     # Plot an edge between child and parent
-                    if not flag:
+                    if i == 0:
                         plt.plot([parent_node[0], child_node[0]], 
                                 [parent_node[1], child_node[1]], 
-                                linewidth=1.5, color='blue', label='Shortest path')
-                        flag = True
+                                linewidth=1.5, color='m', label='Shortest path')
                     else:
                         plt.plot([parent_node[0], child_node[0]], 
                                 [parent_node[1], child_node[1]], 
-                                linewidth=1.5, color='blue')
+                                linewidth=1.5, color='m')
 
             # Plot start and goal points with different colors
             plt.scatter(x_values[0], y_values[0], 
@@ -440,13 +428,13 @@ class RRTstar:
                                 label='Goal margin')
             plt.gca().add_patch(square)
 
-            if i == 1: plt.title('RRT* graph :)')
-            if i == 2: plt.title('RRT graph')
+            if iter == 1: plt.title('RRT* graph :)')
+            if iter == 2: plt.title('RRT graph')
             plt.xlabel('x (m)')
             plt.ylabel('y (m)')
             plt.xlim([-10, 10])
             plt.ylim([-10, 10])
-            if i == 1: plt.legend(loc='upper left')
+            if iter == 1: plt.legend(loc='upper left')
             plt.tight_layout()
             plt.show()
 
@@ -583,6 +571,7 @@ class RRTstar:
             if self.config_is_near_goal(q_rand, goal_xyz):
                 if debugRRT: print(f"i = {i}: This configuration is sufficiently close to the goal.")
                 self.vertices[key_q_new][3] = True
+                self.get_shortest_path()
                 if stop_when_goal_reached:
                     print(f"Goal reached after {i} iterations. Stopping algorithm.")
                     break
@@ -593,27 +582,30 @@ class RRTstar:
             # Increment node ID
             node_id += 1
             if not debugRRT: print(f"node_id = {node_id}")
+
+            if i == n_expansions: 
+                print(f"Max number of iterations ({n_expansions}) reached. Stopping algorithm.")
         
-        if debugRRT: print(self.vertices.keys())
-        print(f"Max number of iterations ({n_expansions}) reached. Stopping algorithm.")
         return
 
 
 if __name__ == "__main__":
+    # env params
     room = {
             "width": [-10, 10],
             "length": [-10, 10],
             "height": 8,
             "margin_of_closeness_to_goal": 1
             }
+    
     rrt = RRTstar(l1=0.4, l2=0.7, l3=0.6, room=room)
 
     # start config and goal point
-    config_s = [-10, -10, 0, 0, (1/2)*np.pi]
+    config_s = [-9.5, -9.5, 0, 0, (1/2)*np.pi]
     goal = [9, 9, 1]
 
     # RRT parameters
-    sample_radius = 2
+    sample_radius = 3
     neighbor_radius = 3
     n_expansions = 5000
     also_run_normal_RRT = False
