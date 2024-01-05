@@ -6,398 +6,332 @@ from mpscenes.obstacles.cylinder_obstacle import CylinderObstacle
 
 #Room obstacle 1
 #========================================================================
-location_table1 = [5,5,1]
-width_table = 4
-length_table = 2
-table_top1 = {
-    'type': 'box',
-    'geometry': {
-        'position': location_table1,  # Adjust the position as needed
-        'width': width_table,  # Adjust the size as needed
-        'height': 0.2,
-        'length': length_table,
-    },
+table1_1_dict = {
+    "type": "sphere",
+    "geometry": {"position": [4,5,1], "radius": 1.0},
+    "rgba": [0.1,0.6,0.29, 1.0],
 }
-
-table_leg1_1 = {
-    'type': 'box',
-    'geometry': {
-        'position': [location_table1[0]+0.2-length_table/2, location_table1[1]-0.2+width_table/2, 0.5],  # Adjust the position as needed
-        'width': 0.2,  # Adjust the size as needed
-        'height': 1.0,
-        'length': 0.2,
-    },
+table1_2_dict = {
+    "type": "sphere",
+    "geometry": {"position": [6,5,1], "radius": 1.0},
+    "rgba": [0.1,0.6,0.29, 1.0],
 }
-
-table_leg1_2 = {
-    'type': 'box',
-    'geometry': {
-        'position': [location_table1[0]+0.2-length_table/2, location_table1[1]+0.2-width_table/2, 0.5],  # Adjust the position as needed
-        'width': 0.2,  # Adjust the size as needed
-        'height': 1.0,
-        'length': 0.2,
-    },
-}
-
-table_leg1_3 = {
-    'type': 'box',
-    'geometry': {
-        'position': [location_table1[0]-0.2+length_table/2, location_table1[1]-0.2+width_table/2, 0.5],  # Adjust the position as needed
-        'width': 0.2,  # Adjust the size as needed
-        'height': 1.0,
-        'length': 0.2,
-    },
-}
-
-table_leg1_4 = {
-    'type': 'box',
-    'geometry': {
-        'position': [location_table1[0]-0.2+length_table/2, location_table1[1]+0.2-width_table/2, 0.5],  # Adjust the position as needed
-        'width': 0.2,  # Adjust the size as needed
-        'height': 1.0,
-        'length': 0.2,
-    },
+table1_3_dict = {
+    "type": "sphere",
+    "geometry": {"position": [5,5,1], "radius": 1.0},
+    "rgba": [0.1,0.6,0.29, 1.0],
 }
 #========================================================================
-tabletop1 = BoxObstacle(
-    name="Table1",
-    content_dict=table_top1
+table1_1 = SphereObstacle(
+    name="Sphere1", 
+    content_dict=table1_1_dict
 )
-
-tableleg1_1 = BoxObstacle(
-    name="Table1",
-    content_dict=table_leg1_1
+table1_2 = SphereObstacle(
+    name="Sphere1", 
+    content_dict=table1_2_dict
 )
-tableleg1_2 = BoxObstacle(
-    name="Table1",
-    content_dict=table_leg1_2
+table1_3 = SphereObstacle(
+    name="Sphere1", 
+    content_dict=table1_3_dict
 )
-tableleg1_3 = BoxObstacle(
-    name="Table1",
-    content_dict=table_leg1_3
-)
-tableleg1_4 = BoxObstacle(
-    name="Table1",
-    content_dict=table_leg1_4
-)
-#========================================================================
 #========================================================================
 
 #Room obstacle 2
 #========================================================================
-location_table2 = [-5,-3,1]
-width_table = 2
-length_table = 4
-table_top2 = {
-    'type': 'box',
-    'geometry': {
-        'position': location_table2,  # Adjust the position as needed
-        'width': width_table,  # Adjust the size as needed
-        'height': 0.2,
-        'length': length_table,
-    },
+table2_1_dict = {
+    "type": "sphere",
+    "geometry": {"position": [-5,-2,1], "radius": 1.0},
+    "rgba": [0.1,0.6,0.29, 1.0],
 }
-
-table_leg2_1 = {
-    'type': 'box',
-    'geometry': {
-        'position': [location_table2[0]+0.2-length_table/2, location_table2[1]-0.2+width_table/2, 0.5],  # Adjust the position as needed
-        'width': 0.2,  # Adjust the size as needed
-        'height': 1.0,
-        'length': 0.2,
-    },
+table2_2_dict = {
+    "type": "sphere",
+    "geometry": {"position": [-5,-3,1], "radius": 1.0},
+    "rgba": [0.1,0.6,0.29, 1.0],
 }
-
-table_leg2_2 = {
-    'type': 'box',
-    'geometry': {
-        'position': [location_table2[0]+0.2-length_table/2, location_table2[1]+0.2-width_table/2, 0.5],  # Adjust the position as needed
-        'width': 0.2,  # Adjust the size as needed
-        'height': 1.0,
-        'length': 0.2,
-    },
-}
-
-table_leg2_3 = {
-    'type': 'box',
-    'geometry': {
-        'position': [location_table2[0]-0.2+length_table/2, location_table2[1]-0.2+width_table/2, 0.5],  # Adjust the position as needed
-        'width': 0.2,  # Adjust the size as needed
-        'height': 1.0,
-        'length': 0.2,
-    },
-}
-
-table_leg2_4 = {
-    'type': 'box',
-    'geometry': {
-        'position': [location_table2[0]-0.2+length_table/2, location_table2[1]+0.2-width_table/2, 0.5],  # Adjust the position as needed
-        'width': 0.2,  # Adjust the size as needed
-        'height': 1.0,
-        'length': 0.2,
-    },
+table2_3_dict = {
+    "type": "sphere",
+    "geometry": {"position": [-5,-4,1], "radius": 1.0},
+    "rgba": [0.1,0.6,0.29, 1.0],
 }
 #========================================================================
-tabletop2 = BoxObstacle(
-    name="Table1",
-    content_dict=table_top2
+table2_1 = SphereObstacle(
+    name="Sphere1", 
+    content_dict=table2_1_dict
 )
-
-tableleg2_1 = BoxObstacle(
-    name="Table1",
-    content_dict=table_leg2_1
+table2_2 = SphereObstacle(
+    name="Sphere1", 
+    content_dict=table2_2_dict
 )
-tableleg2_2 = BoxObstacle(
-    name="Table1",
-    content_dict=table_leg2_2
+table2_3 = SphereObstacle(
+    name="Sphere1", 
+    content_dict=table2_3_dict
 )
-tableleg2_3 = BoxObstacle(
-    name="Table1",
-    content_dict=table_leg2_3
-)
-tableleg2_4 = BoxObstacle(
-    name="Table1",
-    content_dict=table_leg2_4
-)
-#========================================================================
 #========================================================================
 
-#Room obstacle 2
+#Room obstacle 3
 #========================================================================
-position_roundtable1 = [3, -6]
-roundtablefoot1_dict = {
-    "type": "cylinder",
-    "movable": False,
-    "geometry": {
-        "position": [position_roundtable1[0], position_roundtable1[1], 0.15],
-        "radius": 0.5,
-        "height": 0.3,
-    },
-    "rgba": [0.1, 0.3, 0.3, 1.0],
-}
-roundtableleg1_dict = {
-    "type": "cylinder",
-    "movable": False,
-    "geometry": {
-        "position": [position_roundtable1[0], position_roundtable1[1], 0.5],
-        "radius": 0.1,
-        "height": 1,
-    },
-    "rgba": [0.1, 0.3, 0.3, 1.0],
-}
-roundtabletop1_dict = {
-    "type": "cylinder",
-    "movable": False,
-    "geometry": {
-        "position": [position_roundtable1[0], position_roundtable1[1], 1],
-        "radius": 1.5,
-        "height": 0.1,
-    },
+table3_1_dict = {
+    "type": "sphere",
+    "geometry": {"position": [3,-6,0.5], "radius": 1.5},
     "rgba": [0.1, 0.3, 0.3, 1.0],
 }
 #========================================================================
-roundtablefoot1 = CylinderObstacle(
-    name="Cylinder1",
-    content_dict=roundtablefoot1_dict
+table3_1 = SphereObstacle(
+    name="Sphere1", 
+    content_dict=table3_1_dict
 )
-roundtableleg1 = CylinderObstacle(
-    name="Cylinder1",
-    content_dict=roundtableleg1_dict
-)
-roundtabletop1 = CylinderObstacle(
-    name="Cylinder1",
-    content_dict=roundtabletop1_dict
-)
-#========================================================================
 #========================================================================
 
 #Room obstacle 4
 #========================================================================
-location_chair1 = [-2.5,-3,1]
-chairseat1 = {
-    'type': 'box',
-    'geometry': {
-        'position': [location_chair1[0],location_chair1[1],0.3],  # Adjust the position as needed
-        'width': 0.7,  # Adjust the size as needed
-        'height': 0.6,
-        'length': 0.7,
-    },
+chairsphere1_1_dict = {
+    "type": "sphere",
+    "geometry": {"position": [-2.5,-3,0.35], "radius": 0.7},
     "rgba": [0.6, 0.3, 0.1, 1.0],
 }
-
-chairback1 = {
-    'type': 'box',
-    'geometry': {
-        'position': [location_chair1[0]+0.4,location_chair1[1], 0.8],  # Adjust the position as needed
-        'width': 0.7,  # Adjust the size as needed
-        'height': 1.6,
-        'length': 0.1,
-    },
+chairsphere1_2_dict = {
+    "type": "sphere",
+    "geometry": {"position": [-2.5,-3,1], "radius": 0.7},
+    "rgba": [0.6, 0.3, 0.1, 1.0],
+}
+chairsphere1_3_dict = {
+    "type": "sphere",
+    "geometry": {"position": [-2.5,-3,1.35], "radius": 0.7},
     "rgba": [0.6, 0.3, 0.1, 1.0],
 }
 #========================================================================
-chairseat1 = BoxObstacle(
-    name="Table1",
-    content_dict=chairseat1
+chairsphere1_1 = SphereObstacle(
+    name="Sphere1", 
+    content_dict=chairsphere1_1_dict
 )
-
-chairback1 = BoxObstacle(
-    name="Table1",
-    content_dict=chairback1
+chairsphere1_2 = SphereObstacle(
+    name="Sphere1", 
+    content_dict=chairsphere1_2_dict
 )
-
-#========================================================================
+chairsphere1_3= SphereObstacle(
+    name="Sphere1", 
+    content_dict=chairsphere1_3_dict
+)
 #========================================================================
 
 #Room obstacle 6
 #========================================================================
-closet1_dict = {
-    'type': 'box',
-    'geometry': {
-        'position': [-4,6,1.5],  # Adjust the position as needed
-        'width': 2,  # Adjust the size as needed
-        'height': 3,
-        'length': 0.7,
-    },
+closetsphere1_1_dict = {
+    "type": "sphere",
+    "geometry": {"position": [-4,6,0.7], "radius": 0.7},
+    "rgba": [0.3, 0.5, 0.6, 1.0],
+}
+closetsphere1_2_dict = {
+    "type": "sphere",
+    "geometry": {"position": [-4,6+1.4,0.7], "radius": 0.7},
+    "rgba": [0.3, 0.5, 0.6, 1.0],
+}
+closetsphere1_3_dict = {
+    "type": "sphere",
+    "geometry": {"position": [-4,6-1.4,0.7], "radius": 0.7},
+    "rgba": [0.3, 0.5, 0.6, 1.0],
+}
+closetsphere1_4_dict = {
+    "type": "sphere",
+    "geometry": {"position": [-4,6,0.7+1.4], "radius": 0.7},
+    "rgba": [0.3, 0.5, 0.6, 1.0],
+}
+closetsphere1_5_dict = {
+    "type": "sphere",
+    "geometry": {"position": [-4,6+1.4,0.7+1.4], "radius": 0.7},
+    "rgba": [0.3, 0.5, 0.6, 1.0],
+}
+closetsphere1_6_dict = {
+    "type": "sphere",
+    "geometry": {"position": [-4,6-1.4,0.7+1.4], "radius": 0.7},
+    "rgba": [0.3, 0.5, 0.6, 1.0],
+}
+closetsphere1_7_dict = {
+    "type": "sphere",
+    "geometry": {"position": [-4,6,0.7+1.4*2], "radius": 0.7},
+    "rgba": [0.3, 0.5, 0.6, 1.0],
+}
+closetsphere1_8_dict = {
+    "type": "sphere",
+    "geometry": {"position": [-4,6+1.4,0.7+1.4*2], "radius": 0.7},
+    "rgba": [0.3, 0.5, 0.6, 1.0],
+}
+closetsphere1_9_dict = {
+    "type": "sphere",
+    "geometry": {"position": [-4,6-1.4,0.7+1.4*2], "radius": 0.7},
     "rgba": [0.3, 0.5, 0.6, 1.0],
 }
 #========================================================================
-closet1 = BoxObstacle(
-    name="Table1",
-    content_dict=closet1_dict
+closetsphere1_1 = SphereObstacle(
+    name="Sphere1", 
+    content_dict=closetsphere1_1_dict
 )
-#========================================================================
+closetsphere1_2 = SphereObstacle(
+    name="Sphere1", 
+    content_dict=closetsphere1_2_dict
+)
+closetsphere1_3= SphereObstacle(
+    name="Sphere1", 
+    content_dict=closetsphere1_3_dict
+)
+closetsphere1_4 = SphereObstacle(
+    name="Sphere1", 
+    content_dict=closetsphere1_4_dict
+)
+closetsphere1_5 = SphereObstacle(
+    name="Sphere1", 
+    content_dict=closetsphere1_5_dict
+)
+closetsphere1_6= SphereObstacle(
+    name="Sphere1", 
+    content_dict=closetsphere1_6_dict
+)
+closetsphere1_7 = SphereObstacle(
+    name="Sphere1", 
+    content_dict=closetsphere1_7_dict
+)
+closetsphere1_8 = SphereObstacle(
+    name="Sphere1", 
+    content_dict=closetsphere1_8_dict
+)
+closetsphere1_9= SphereObstacle(
+    name="Sphere1", 
+    content_dict=closetsphere1_9_dict
+)
 #========================================================================
 
 #Room obstacle 7
 #========================================================================
-closet2_dict = {
-    'type': 'box',
-    'geometry': {
-        'position': [-6,4,1.5],  # Adjust the position as needed
-        'width': 0.7,  # Adjust the size as needed
-        'height': 3,
-        'length': 2,
-    },
+closetsphere2_1_dict = {
+    "type": "sphere",
+    "geometry": {"position": [-6,4,0.7], "radius": 0.7},
+    "rgba": [0.3, 0.5, 0.6, 1.0],
+}
+closetsphere2_2_dict = {
+    "type": "sphere",
+    "geometry": {"position": [-6+1.4,4,0.7], "radius": 0.7},
+    "rgba": [0.3, 0.5, 0.6, 1.0],
+}
+closetsphere2_3_dict = {
+    "type": "sphere",
+    "geometry": {"position": [-6-1.4,4,0.7], "radius": 0.7},
+    "rgba": [0.3, 0.5, 0.6, 1.0],
+}
+closetsphere2_4_dict = {
+    "type": "sphere",
+    "geometry": {"position": [-6,4,0.7+1.4], "radius": 0.7},
+    "rgba": [0.3, 0.5, 0.6, 1.0],
+}
+closetsphere2_5_dict = {
+    "type": "sphere",
+    "geometry": {"position": [-6+1.4,4,0.7+1.4], "radius": 0.7},
+    "rgba": [0.3, 0.5, 0.6, 1.0],
+}
+closetsphere2_6_dict = {
+    "type": "sphere",
+    "geometry": {"position": [-6-1.4,4,0.7+1.4], "radius": 0.7},
+    "rgba": [0.3, 0.5, 0.6, 1.0],
+}
+closetsphere2_7_dict = {
+    "type": "sphere",
+    "geometry": {"position": [-6,4,0.7+1.4*2], "radius": 0.7},
+    "rgba": [0.3, 0.5, 0.6, 1.0],
+}
+closetsphere2_8_dict = {
+    "type": "sphere",
+    "geometry": {"position": [-6+1.4,4,0.7+1.4*2], "radius": 0.7},
+    "rgba": [0.3, 0.5, 0.6, 1.0],
+}
+closetsphere2_9_dict = {
+    "type": "sphere",
+    "geometry": {"position": [-6-1.4,4,0.7+1.4*2], "radius": 0.7},
     "rgba": [0.3, 0.5, 0.6, 1.0],
 }
 #========================================================================
-closet2 = BoxObstacle(
-    name="Table1",
-    content_dict=closet2_dict
+closetsphere2_1 = SphereObstacle(
+    name="Sphere1", 
+    content_dict=closetsphere2_1_dict
 )
-#========================================================================
+closetsphere2_2 = SphereObstacle(
+    name="Sphere1", 
+    content_dict=closetsphere2_2_dict
+)
+closetsphere2_3= SphereObstacle(
+    name="Sphere1", 
+    content_dict=closetsphere2_3_dict
+)
+closetsphere2_4 = SphereObstacle(
+    name="Sphere1", 
+    content_dict=closetsphere2_4_dict
+)
+closetsphere2_5 = SphereObstacle(
+    name="Sphere1", 
+    content_dict=closetsphere2_5_dict
+)
+closetsphere2_6= SphereObstacle(
+    name="Sphere1", 
+    content_dict=closetsphere2_6_dict
+)
+closetsphere2_7 = SphereObstacle(
+    name="Sphere1", 
+    content_dict=closetsphere2_7_dict
+)
+closetsphere2_8 = SphereObstacle(
+    name="Sphere1", 
+    content_dict=closetsphere2_8_dict
+)
+closetsphere2_9= SphereObstacle(
+    name="Sphere1", 
+    content_dict=closetsphere2_9_dict
+)
 #========================================================================
 
 #Room obstacle 2
 #========================================================================
-position_roundtable2 = [-6, 8]
-roundtablefoot2_dict = {
-    "type": "cylinder",
-    "movable": False,
-    "geometry": {
-        "position": [position_roundtable2[0], position_roundtable2[1], 0.15],
-        "radius": 0.5,
-        "height": 0.3,
-    },
-    "rgba": [0.1, 0.3, 0.3, 1.0],
-}
-roundtableleg2_dict = {
-    "type": "cylinder",
-    "movable": False,
-    "geometry": {
-        "position": [position_roundtable2[0], position_roundtable2[1], 0.5],
-        "radius": 0.1,
-        "height": 1,
-    },
-    "rgba": [0.1, 0.3, 0.3, 1.0],
-}
-roundtabletop2_dict = {
-    "type": "cylinder",
-    "movable": False,
-    "geometry": {
-        "position": [position_roundtable2[0], position_roundtable2[1], 1],
-        "radius": 1.5,
-        "height": 0.1,
-    },
+table4_1_dict = {
+    "type": "sphere",
+    "geometry": {"position": [-6,8,0.5], "radius": 1.5},
     "rgba": [0.1, 0.3, 0.3, 1.0],
 }
 #========================================================================
-roundtablefoot2 = CylinderObstacle(
-    name="Cylinder1",
-    content_dict=roundtablefoot2_dict
+table4_1 = SphereObstacle(
+    name="Sphere1", 
+    content_dict=table4_1_dict
 )
-roundtableleg2 = CylinderObstacle(
-    name="Cylinder1",
-    content_dict=roundtableleg2_dict
-)
-roundtabletop2 = CylinderObstacle(
-    name="Cylinder1",
-    content_dict=roundtabletop2_dict
-)
-#========================================================================
 #========================================================================
 
 #Room obstacle 8
 #========================================================================
-location_chair2 = [6.5,-6,1]
-chairseat2 = {
-    'type': 'box',
-    'geometry': {
-        'position': [location_chair2[0],location_chair2[1],0.3],  # Adjust the position as needed
-        'width': 0.7,  # Adjust the size as needed
-        'height': 0.6,
-        'length': 0.7,
-    },
-    "rgba": [0.6, 0.3, 0.1, 1.0],
-
-}
-
-chairback2 = {
-    'type': 'box',
-    'geometry': {
-        'position': [location_chair2[0]+0.4,location_chair2[1], 0.8],  # Adjust the position as needed
-        'width': 0.7,  # Adjust the size as needed
-        'height': 1.6,
-        'length': 0.1,
-    },
-    "rgba": [0.6, 0.3, 0.1, 1.0],
-
-}
-#========================================================================
-chairseat2 = BoxObstacle(
-    name="Table1",
-    content_dict=chairseat2
-)
-
-chairback2 = BoxObstacle(
-    name="Table1",
-    content_dict=chairback2
-)
-
-#========================================================================
-#========================================================================
-
-
-sphere1_dict = {
+chairsphere2_1_dict = {
     "type": "sphere",
-    "geometry": {"position": [2.0, 2.0, 1.0], "radius": 1.0},
-    "rgba": [0.6,0.45,0.29, 1.0],
+    "geometry": {"position": [6.5,-6,0.35], "radius": 0.7},
+    "rgba": [0.6, 0.3, 0.1, 1.0],
 }
-sphere1 = SphereObstacle(
+chairsphere2_2_dict = {
+    "type": "sphere",
+    "geometry": {"position": [6.5,-6,1], "radius": 0.7},
+    "rgba": [0.6, 0.3, 0.1, 1.0],
+}
+chairsphere2_3_dict = {
+    "type": "sphere",
+    "geometry": {"position": [6.5,-6,1.35], "radius": 0.7},
+    "rgba": [0.6, 0.3, 0.1, 1.0],
+}
+#========================================================================
+chairsphere2_1 = SphereObstacle(
     name="Sphere1", 
-    content_dict=sphere1_dict
+    content_dict=chairsphere2_1_dict
 )
+chairsphere2_2 = SphereObstacle(
+    name="Sphere1", 
+    content_dict=chairsphere2_2_dict
+)
+chairsphere2_3= SphereObstacle(
+    name="Sphere1", 
+    content_dict=chairsphere2_3_dict
+)
+#========================================================================
 
-sphere2_dict = {
-    "type": "sphere",
-    "geometry": {"position": [-2.0, -2.0, 1.0], "radius": 0.5},
-    "rgba": [0.1, 0.8, 0.9, 1.0],
-}
-sphere2 = SphereObstacle(
-    name="Sphere2", 
-    content_dict=sphere2_dict
-)
 
 wall_length = 22
 wall1_dict = {
@@ -507,25 +441,26 @@ cylinder1 = CylinderObstacle(
 collision_obstacles = []
 
 #add table 1
-collision_obstacles += [tabletop1, tableleg1_1, tableleg1_2, tableleg1_3, tableleg1_4]
+collision_obstacles += [table1_1, table1_2, table1_3]
 
 #add table 2
-collision_obstacles += [tabletop2, tableleg2_1, tableleg2_2, tableleg2_3, tableleg2_4]
+collision_obstacles += [table2_1, table2_2, table2_3]
 
 #add table 3
-collision_obstacles += [roundtablefoot1, roundtableleg1, roundtabletop1]
+collision_obstacles += [table3_1]
 
 #add table 4
-collision_obstacles += [roundtablefoot2, roundtableleg2, roundtabletop2]
+collision_obstacles += [table4_1]
 
 #add chair 1
-collision_obstacles += [chairseat1, chairback1]
+collision_obstacles += [chairsphere1_1, chairsphere1_2, chairsphere1_3]
 
 #add chair 2
-collision_obstacles += [chairseat2, chairback2]
+collision_obstacles += [chairsphere2_1, chairsphere2_2, chairsphere2_3]
 
 #add closet 1 and 2
-collision_obstacles += [closet1, closet2]
+collision_obstacles += [closetsphere1_1, closetsphere1_2, closetsphere1_3, closetsphere1_4, closetsphere1_5, closetsphere1_6, closetsphere1_7, closetsphere1_8, closetsphere1_9]
+collision_obstacles += [closetsphere2_1, closetsphere2_2, closetsphere2_3, closetsphere2_4, closetsphere2_5, closetsphere2_6, closetsphere2_7, closetsphere2_8, closetsphere2_9]
 
 #[sphere1, sphere2]
 # sphere1, sphere2, wall1, cylinder1
