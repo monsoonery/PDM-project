@@ -129,7 +129,7 @@ class RRTstar:
             x_robot = x
             y_robot = y
             z_robot = self.l1 / 2 # center of base
-            r_robot = self.l1 / 2 # value taken from URDF, assuming the base is just 1 sphere (extremely simplified)
+            r_robot = np.sqrt(2*(self.l1 / 2)**2) # radius of sphere that encapsulates the cylindrical base
 
             if self.intersects_any_obstacle(x_robot, y_robot, z_robot, r_robot):
                 if (debugCollision): print("Collision!")
