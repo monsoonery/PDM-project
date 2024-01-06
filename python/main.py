@@ -24,18 +24,17 @@ if __name__ == "__main__":
      # RRT parameters
      sample_radius = 3
      neighbor_radius = 3
-     n_expansions = 5000
+     n_expansions = 10000
      also_run_normal_RRT = False
      stop_when_goal_reached = True
-     animate_plot = False
+     animate_plot = True
+     verbose = True
 
      # start configuration and goal coordinates
      initial_config = [-9.5, -9.5, 0, 0, (1/2)*np.pi]
      goal = [9, 9, 1]
 
-     # Create environment, robot and RRT algorithm objecs
-     env = environment.Environment()
-     coffeebot = robot.Robot(env.env, initial_config, l1, l2, l3)
+     # Create RRT algorithm object
      rrt = RRTstar.RRTstar(l1, l2, l3, room)
 
      # run RRTstar
@@ -45,14 +44,19 @@ if __name__ == "__main__":
             n_expansions=n_expansions, 
             stop_when_goal_reached=stop_when_goal_reached, 
             also_run_normal_RRT=also_run_normal_RRT,
-            animate_plot=animate_plot)
+            animate_plot=animate_plot,
+            verbose=verbose)
 
-     # Display result (the shortest path)
+     # Display results (the shortest path) in a figure
      result = rrt.get_shortest_path()
      print(f"Shortest path configs: {result}")
      rrt.plot_results(also_run_normal_RRT)
 
-     # Retrieve and follow the planned path
+     # Create environment and robot objects for simulation
+     env = environment.Environment()
+     coffeebot = robot.Robot(env.env, initial_config, l1, l2, l3)
+
+     # Follow the planned path in the simulation
      for config in result:
           print(f"current config: {config}")
           coffeebot.move_to_goal(goal = config)
