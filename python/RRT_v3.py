@@ -472,6 +472,7 @@ class RRTstar:
         if animate_plot:
             plt.figure(1)
             plt.ion() 
+            self.animate()
             plt.show()
 
         # Main loop
