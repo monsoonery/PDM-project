@@ -1,6 +1,7 @@
 import numpy as np
 import random
 import matplotlib.pyplot as plt
+from matplotlib.animation import FuncAnimation
 
 import obstacles
 
@@ -282,8 +283,9 @@ class RRTstar:
         plt.ylim([-10, 10])
         plt.legend(loc='upper left')
         plt.tight_layout()
-        plt.pause(0.01)
-    
+        plt.pause(0.1)
+
+
     """--------------------- ACTUAL FUNCTIONS ---------------------"""
     # Returns the shortest path from start to goal using a backwards search (works for RRT* only!)
     def get_shortest_path(self):
@@ -323,7 +325,7 @@ class RRTstar:
         # Nodes/configs are listed from goal to start due to backwards search, so they must be reversed
         self.shortest_path_keys.reverse()
         self.shortest_path_configs.reverse()
-                
+
         return self.shortest_path_configs
 
     # Plots the result of RRT* (and optionally also RRT)
@@ -439,7 +441,7 @@ class RRTstar:
             plt.show()
 
     # Runs the RRT* algorithm (and optionally also RRT) to create a graph/tree
-    def run(self, initial_config, goal_xyz, sample_radius = 2, neighbor_radius=3, n_expansions=1000, stop_when_goal_reached=True, also_run_normal_RRT = False, animate_plot=False):
+    def run(self, initial_config, goal_xyz, sample_radius = 2, neighbor_radius=3, n_expansions=1000, stop_when_goal_reached=True, also_run_normal_RRT = False, animate_plot=False, verbose=False):
         # Initialize variables
         self.goal_xyz = goal_xyz
         self.initial_config = initial_config
@@ -476,7 +478,7 @@ class RRTstar:
         node_id = 1
         print(f"Now running RRT*! This will take a while...")
         for i in range(0, n_expansions):
-            if not debugRRT: print(f"i = {i}")
+            if verbose: print(f"i = {i}")
             
             # [1] Get a random configuration sample q_rand
             q_rand = self.get_random_sample()
@@ -588,6 +590,7 @@ class RRTstar:
         
         return
 
+        
 
 if __name__ == "__main__":
     # env params
@@ -607,10 +610,11 @@ if __name__ == "__main__":
     # RRT parameters
     sample_radius = 3
     neighbor_radius = 3
-    n_expansions = 5000
+    n_expansions = 10000
     also_run_normal_RRT = False
     stop_when_goal_reached = True
     animate_plot = True
+    verbose = True
 
     rrt.run(config_s, goal, 
             sample_radius=sample_radius,
@@ -618,7 +622,8 @@ if __name__ == "__main__":
             n_expansions=n_expansions, 
             stop_when_goal_reached=stop_when_goal_reached, 
             also_run_normal_RRT=also_run_normal_RRT,
-            animate_plot=animate_plot)
+            animate_plot=animate_plot,
+            verbose=verbose)
 
     print(f"Shortest path configs: {rrt.get_shortest_path()}")
 
