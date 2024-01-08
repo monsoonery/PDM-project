@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 import os
 from matplotlib.colors import hsv_to_rgb, to_rgba
 from scipy.interpolate import interp1d
+import glob
 
 import obstacles
 
@@ -37,6 +38,7 @@ class RRTstar:
         self.shortest_path_configs = []
 
         self.image_id = 0
+        self.file_directory = None
 
     """--------------------- HELPER FUNCTIONS ---------------------"""
     # Returns a random sample in configuration space
@@ -268,7 +270,7 @@ class RRTstar:
                         linewidth=1.5, color='m')
 
         # Plot start and goal points with different colors
-        if x_values: plt.scatter(x_values[0], y_values[0], 
+        plt.scatter(self.initial_config[0], self.initial_config[0], 
                     color='red', s=100,
                     label='Start configuration')
         plt.scatter(self.goal_xyz[0], self.goal_xyz[1], 
@@ -283,16 +285,17 @@ class RRTstar:
                             label='Goal margin')
         plt.gca().add_patch(circle)
 
-        plt.title('RRT* graph (LIVE!)')
+        plt.title('RRT* graph (real-time plot)')
         plt.xlabel('x (m)')
         plt.ylabel('y (m)')
         plt.xlim([-10, 10])
         plt.ylim([-10, 10])
-        plt.legend(loc='upper left')
+        plt.legend(loc='upper left', fontsize="small", markerscale=0.7)
         plt.tight_layout()
 
+        # Save this animation "frame" to disk
         if self.file_directory is not None:
-            filename = os.path.join(file_directory, f"rrt_frame_{self.image_id}.png")
+            filename = os.path.join(self.file_directory, f"rrt_frame_{self.image_id}.png")
             plt.savefig(filename)
             self.image_id += 1
 
@@ -347,7 +350,7 @@ class RRTstar:
 
         for iter in range(1, num_iterations+1):
             plt.ioff()
-            plt.figure(iter+1, figsize=(10, 10))
+            plt.figure(iter+1, figsize=(6, 6))
 
             # Extract datapoints from node list: get x, y, etc of each node
             if iter == 1:
@@ -364,13 +367,11 @@ class RRTstar:
                 q1_values = [self.nodes[key_node][2] for key_node in keys_nodes]
                 q2_values = [self.nodes[key_node][3] for key_node in keys_nodes]
                 q3_values = [self.nodes[key_node][4] for key_node in keys_nodes]
-            
-             # Plot obstacles
         
             # Plot obstacles
             transformer = interp1d([0.3, 2.8],[0.2, 1])
             for obstacle in self.obstacles:
-                v = np.float(transformer(obstacle.position()[2]))
+                v = float(transformer(obstacle.position()[2]))
                 circle = plt.Circle((obstacle.position()[0], obstacle.position()[1]), 
                                     obstacle.radius(), 
                                     facecolor = to_rgba(hsv_to_rgb([0,0,v]), alpha=0.7),
@@ -440,19 +441,19 @@ class RRTstar:
 
             # Plot goal margin
             margin = self.room["margin_of_closeness_to_goal"]
-            square = plt.Rectangle((self.goal_xyz[0] - margin, self.goal_xyz[1] - margin), 
-                                2 * margin, 2 * margin,
+            circle = plt.Circle((self.goal_xyz[0], self.goal_xyz[1]), 
+                                margin,
                                 color='green', fill=False, 
                                 label='Goal margin')
-            plt.gca().add_patch(square)
+            plt.gca().add_patch(circle)
 
-            if iter == 1: plt.title('RRT* graph :)')
+            if iter == 1: plt.title('RRT* graph')
             if iter == 2: plt.title('RRT graph')
             plt.xlabel('x (m)')
             plt.ylabel('y (m)')
             plt.xlim([-10, 10])
             plt.ylim([-10, 10])
-            if iter == 1: plt.legend(loc='upper left')
+            if iter == 1: plt.legend(loc='upper left', fontsize="small", markerscale=0.7)
             plt.tight_layout()
             plt.show()
 
@@ -490,7 +491,11 @@ class RRTstar:
         if animate_plot:
             plt.figure(1, figsize=(6, 6))
             plt.ion() 
-            self.file_directory = file_directory
+            if file_directory is not None: 
+                self.file_directory = file_directory
+                files = glob.glob(f"{self.file_directory}\\*.png")
+                for f in files:
+                    os.remove(f)
             self.image_id = 0
             self.animate()
             plt.tight_layout()
@@ -639,7 +644,7 @@ if __name__ == "__main__":
     rrt = RRTstar(l1=0.4, l2=0.7, l3=0.6, room=room)
 
     # start config and goal point
-    config_s = [-9.5, -9.5, 0, 0, (1/2)*np.pi]
+    initial_config = [-9.5, -9.5, 0, 0, (1/2)*np.pi]
     goal = [9, 9, 1]
 
     # RRT parameters
@@ -653,7 +658,7 @@ if __name__ == "__main__":
     #file_directory = None # Enter directory to save plot images (for generating animation). Set to None if you don't want to save these
     file_directory = "D:\\My Files\\Documents\\Studie\\RO47005 Planning & Decision Making\\PDM-project\\plot_images" 
 
-    rrt.run(config_s, goal, 
+    rrt.run(initial_config, goal, 
             sample_radius=sample_radius,
             neighbor_radius=neighbor_radius,
             n_expansions=n_expansions, 
