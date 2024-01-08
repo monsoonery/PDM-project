@@ -391,7 +391,7 @@ lampsphere2_3= SphereObstacle(
 #========================================================================
 hanglampsphere1_1_dict = {
     "type": "sphere",
-    "geometry": {"position": [-5.0, -7.5, 2], "radius": 0.8},
+    "geometry": {"position": [-5.0, -7.5, 2], "radius": 0.7},
     "rgba": color_spheres_chairs,
 }
 #========================================================================
@@ -406,7 +406,7 @@ hanglampsphere1_1= SphereObstacle(
 #========================================================================
 hanglampsphere2_1_dict = {
     "type": "sphere",
-    "geometry": {"position": [0.0, 5.0, 2], "radius": 0.8},
+    "geometry": {"position": [0.0, 5.0, 2], "radius": 0.7},
     "rgba": color_spheres_chairs,
 }
 #========================================================================
@@ -1065,10 +1065,104 @@ lamp2_3 = CylinderObstacle(
     name="Cylinder1",
     content_dict=lamp2_3_dict
 )
+#========================================================================
+#========================================================================
 
-# Room obstacle hanglamp linksonder
-# TODO AESTHETICS HIER
+#Room obstacle 2
+#========================================================================
+position_lamp3 = [-5, -7.5, 2]
+lamp3_1_dict = {
+    "type": "cylinder",
+    "movable": False,
+    "geometry": {
+        "position": [position_lamp3[0], position_lamp3[1], 2],
+        "radius": 0.6,
+        "height": 0.2,
+    },
+    "rgba": color_lamps,
+}
+lamp3_2_dict = {
+    "type": "cylinder",
+    "movable": False,
+    "geometry": {
+        "position": [position_lamp3[0], position_lamp3[1], 2.2],
+        "radius": 0.3,
+        "height": 0.2,
+    },
+    "rgba": color_lamps,
+}
+lamp3_3_dict = {
+    "type": "cylinder",
+    "movable": False,
+    "geometry": {
+        "position": [position_lamp3[0], position_lamp3[1], 2.8],
+        "radius": 0.05,
+        "height": 1,
+    },
+    "rgba": color_lamps,
+}
+#========================================================================
+lamp3_1 = CylinderObstacle(
+    name="Cylinder1",
+    content_dict=lamp3_1_dict
+)
+lamp3_2 = CylinderObstacle(
+    name="Cylinder1",
+    content_dict=lamp3_2_dict
+)
+lamp3_3 = CylinderObstacle(
+    name="Cylinder1",
+    content_dict=lamp3_3_dict
+)
+#========================================================================
+#========================================================================
 
+#Room obstacle 2
+#========================================================================
+position_lamp4 = [0, 5, 2]
+lamp4_1_dict = {
+    "type": "cylinder",
+    "movable": False,
+    "geometry": {
+        "position": [position_lamp4[0], position_lamp4[1], 2],
+        "radius": 0.6,
+        "height": 0.2,
+    },
+    "rgba": color_lamps,
+}
+lamp4_2_dict = {
+    "type": "cylinder",
+    "movable": False,
+    "geometry": {
+        "position": [position_lamp4[0], position_lamp4[1], 2.2],
+        "radius": 0.3,
+        "height": 0.2,
+    },
+    "rgba": color_lamps,
+}
+lamp4_3_dict = {
+    "type": "cylinder",
+    "movable": False,
+    "geometry": {
+        "position": [position_lamp4[0], position_lamp4[1], 2.8],
+        "radius": 0.05,
+        "height": 1,
+    },
+    "rgba": color_lamps,
+}
+#========================================================================
+lamp4_1 = CylinderObstacle(
+    name="Cylinder1",
+    content_dict=lamp4_1_dict
+)
+lamp4_2 = CylinderObstacle(
+    name="Cylinder1",
+    content_dict=lamp4_2_dict
+)
+lamp4_3 = CylinderObstacle(
+    name="Cylinder1",
+    content_dict=lamp4_3_dict
+)
 #========================================================================
 #========================================================================
 
@@ -1151,6 +1245,13 @@ if display_objects:
 
     #add lamp 1
     decorative_obstacles += [lamp1_1, lamp1_2, lamp1_3]
+
+    #add lamp 3
+    decorative_obstacles += [lamp3_1, lamp3_2, lamp3_3]
+
+    #add lamp 4
+    decorative_obstacles += [lamp4_1, lamp4_2, lamp4_3]
+    
     if block_middle:
 
         #add lamp 2
