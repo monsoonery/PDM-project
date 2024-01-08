@@ -34,7 +34,7 @@ if __name__ == "__main__":
      also_run_normal_RRT = False    # If True, both RRT and RRT* algorithms will be executed 
      stop_when_goal_reached = False # If True, algorithm stops as soon as a valid solution is found instead of up to n_expansions
      animate_plot = True            # If True, plots RRT* graph nodes and edges in real-time
-     verbose = True                 # If True, prints the iterations (i = 1, i = 2 etc.) to the terminal to keep track of progress
+     verbose = True                 # If True, prints extra information to the console for each iteration step
      #file_directory = None         # Enter directory to save plot images (for generating animation). Set to None if you don't want to save these
      file_directory = "D:\\My Files\\Documents\\Studie\\RO47005 Planning & Decision Making\\PDM-project\\plot_images" 
 
