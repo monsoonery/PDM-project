@@ -6,6 +6,11 @@ from mpscenes.obstacles.cylinder_obstacle import CylinderObstacle
 
 alpha_value = 0.3
 
+block_middle = False
+display_objects = True
+
+collision_obstacles = []
+
 color_spheres_squaretables = [1, 0, 0, alpha_value]
 color_spheres_roundtables = [1,0,0, alpha_value]
 color_spheres_chairs = [1, 0, 0, alpha_value]
@@ -16,6 +21,13 @@ color_roundtables = [0.1, 0.3, 0.3, 1.0]
 color_chairs = [0.2, 0.1, 0.3, 1.0]
 color_closets = [0.3, 0.1, 0.4, 1.0]
 color_lamps = [0.6, 0.6, 0, 1.0]
+
+#==========================================================================================
+#==========================================================================================
+#================================ COLLISION SPHERES =======================================
+#==========================================================================================
+#==========================================================================================
+
 
 #Room obstacle 1
 #========================================================================
@@ -375,6 +387,35 @@ lampsphere2_3= SphereObstacle(
 #========================================================================
 
 
+# Room obstacle hanglamp linksonder
+#========================================================================
+hanglampsphere1_1_dict = {
+    "type": "sphere",
+    "geometry": {"position": [-5.0, -7.5, 2], "radius": 0.8},
+    "rgba": color_spheres_chairs,
+}
+#========================================================================
+hanglampsphere1_1= SphereObstacle(
+    name="Hanglamp Sphere1", 
+    content_dict=hanglampsphere1_1_dict
+)
+#========================================================================
+
+
+# Room obstacle hanglamp linksonder
+#========================================================================
+hanglampsphere2_1_dict = {
+    "type": "sphere",
+    "geometry": {"position": [0.0, 5.0, 2], "radius": 0.8},
+    "rgba": color_spheres_chairs,
+}
+#========================================================================
+hanglampsphere2_1= SphereObstacle(
+    name="Hanglamp Sphere2", 
+    content_dict=hanglampsphere2_1_dict
+)
+#========================================================================
+
 wall_length = 22
 wall1_dict = {
         'type': 'box', 
@@ -480,7 +521,6 @@ cylinder1 = CylinderObstacle(
     content_dict=cylinder1_dict
 )
 
-collision_obstacles = []
 
 
 #======================================================================================================
@@ -1025,6 +1065,10 @@ lamp2_3 = CylinderObstacle(
     name="Cylinder1",
     content_dict=lamp2_3_dict
 )
+
+# Room obstacle hanglamp linksonder
+# TODO AESTHETICS HIER
+
 #========================================================================
 #========================================================================
 
@@ -1033,16 +1077,8 @@ lamp2_3 = CylinderObstacle(
 #======================================================================================================
 #======================================================================================================
 
-
-
-
-
-
-
-block_middle = True
-display_objects = True
-
-
+#add hanglamp 1 en 2
+collision_obstacles += [hanglampsphere1_1, hanglampsphere2_1]
 
 #add table 1
 collision_obstacles += [table1_1, table1_2]
@@ -1066,10 +1102,10 @@ collision_obstacles += [chairsphere1_1, chairsphere1_3]
 collision_obstacles += [chairsphere2_1, chairsphere2_3]
 #collision_obstacles += [chairsphere2_1, chairsphere2_2, chairsphere2_3]
 
-#add closet 1 and 2
-collision_obstacles += [closetsphere1_1, closetsphere1_2, closetsphere1_3, closetsphere1_4]
-collision_obstacles += [closetsphere2_1, closetsphere2_2, closetsphere2_3, closetsphere2_4]
-collision_obstacles += [closetsphere3_1, closetsphere3_2]
+#add closet 1, 2 and 3
+#collision_obstacles += [closetsphere1_1, closetsphere1_2, closetsphere1_3, closetsphere1_4]
+collision_obstacles += [closetsphere2_1, closetsphere2_2, closetsphere2_3, closetsphere2_4][::-1]
+collision_obstacles += [closetsphere3_1, closetsphere3_2][::-1]
 
 #add chair lamp 1
 collision_obstacles += [lampsphere1_1, lampsphere1_3]
@@ -1109,8 +1145,9 @@ if display_objects:
     #add chair 2
     decorative_obstacles += [chairseat2, chairback2]
 
-    #add closet 1 and 2
-    decorative_obstacles += [closet1, closet2, closet3]
+    #add closet 1, 2 and 3
+    #decorative_obstacles += [closet1, closet2, closet3]
+    decorative_obstacles += [closet2, closet3]
 
     #add lamp 1
     decorative_obstacles += [lamp1_1, lamp1_2, lamp1_3]
