@@ -135,7 +135,7 @@ chairsphere1_2_dict = {
 }
 chairsphere1_3_dict = {
     "type": "sphere",
-    "geometry": {"position": [-2.5,-3,1.35], "radius": 0.7},
+    "geometry": {"position": [-2.5+0.4,-3,1.2], "radius": 0.7},
     "rgba": color_spheres_chairs,
 }
 #========================================================================
@@ -167,7 +167,7 @@ chairsphere2_2_dict = {
 }
 chairsphere2_3_dict = {
     "type": "sphere",
-    "geometry": {"position": [6.5,-6,1.35], "radius": 0.7},
+    "geometry": {"position": [6.5+0.4,-6,1.2], "radius": 0.7},
     "rgba": color_spheres_chairs,
 }
 #========================================================================
