@@ -309,17 +309,20 @@ class RRTstar:
             print("Can't determine shortest path: Run RRT first using the run() method!")
             return []
         
+
         # Find all nodes whose is_near_goal property is true
         keys_nodes_near_goal = [key for key, value in self.vertices.items() if value[3] == True]
         vertices_near_goal = {key: value for key, value in self.vertices.items() if key in keys_nodes_near_goal}
-
-        # If the list is empty, RRT* has not found a solution
+        # If that list is empty, RRT* has not found a solution
         if not keys_nodes_near_goal:
             print("Can't determine shortest path: no solution was found (yet). Try to run RRT* again with a higher number of iterations")
             return []
-        
         # From this list, find the node with the smallest cost/distance from start to goal
         key_node_with_smallest_cost = min(vertices_near_goal, key=lambda x: vertices_near_goal[x][2])
+
+        # Clear variables that store shortest path
+        self.shortest_path_keys = []
+        self.shortest_path_configs = []
 
         # Search backwards from goal to start to find all the configs for the robot to follow
         key_child_node = key_node_with_smallest_cost
@@ -548,8 +551,6 @@ class RRTstar:
 
                 # [-] Rename the node to make it clear that the next lines of code are part of RRT*
                 q_new = q_rand
-                # Update figure with this new node + edge
-                if animate_plot: self.animate()
 
                 # [4] Cost to reach q_new from start via q_near
                 #     This is currently our "best guess" for shortest path from start to q_new
@@ -582,8 +583,6 @@ class RRTstar:
                             if verbose: print(f"i = {i}: Lower cost route found. Old cost: {current_total_cost}, new cost: {new_total_cost}")
                             self.vertices[key_q_new][2] = key_q_neighbor
                             self.vertices[key_q_new][1] = new_total_cost
-                            # Update figure with this new node + edge
-                            if animate_plot: self.animate()
                 
                 # [8] Check if any of the neighbors can be connected to the start via q_new 
                 #     such that its cost is lower than its current connection
@@ -602,8 +601,6 @@ class RRTstar:
                             if verbose: print(f"i = {i}: Lower cost route found. Old cost: {current_total_cost}, new cost: {new_total_cost}")
                             self.vertices[key_q_neighbor][2] = key_q_new
                             self.vertices[key_q_neighbor][1] = new_total_cost
-                            # Update figure with this new node + edge
-                            if animate_plot: self.animate()
 
                 # [9] If the sample is near the goal, set its property is_near_goal to True
                 #     Additionally we break out of the loop early if the algorithm was set to stop once the goal is reached
@@ -611,21 +608,24 @@ class RRTstar:
                     if verbose: print(f"i = {i}: This configuration is sufficiently close to the goal.")
                     self.vertices[key_q_new][3] = True
                     self.get_shortest_path()
+                    # Update figure with this new path
                     if stop_when_goal_reached:
+                        if animate_plot: self.animate()
                         print(f"Goal reached after {i} iterations. Stopping algorithm.")
                         break
-                
+
                 # Update live plot
                 if animate_plot: self.animate()
 
                 # Increment node ID
                 node_id += 1
                 if verbose: print(f"node_id = {node_id}")
-
+                                  
                 if i == n_expansions: 
                     print(f"Max number of iterations ({n_expansions}) reached. Stopping algorithm.")
+
         except KeyboardInterrupt:
-            print("Algorithm interrupted.")
+            print("Algorithm interrupted manually.")
         
         return
 
