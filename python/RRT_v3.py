@@ -220,7 +220,7 @@ class RRTstar:
         # Plot obstacles
         transformer = interp1d([0.3, 2.8],[0.2, 1])
         for obstacle in self.obstacles:
-            v = np.float(transformer(obstacle.position()[2]))
+            v = float(transformer(obstacle.position()[2]))
             circle = plt.Circle((obstacle.position()[0], obstacle.position()[1]), 
                                 obstacle.radius(), 
                                 facecolor = to_rgba(hsv_to_rgb([0,0,v]), alpha=0.7),
