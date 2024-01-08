@@ -309,7 +309,6 @@ class RRTstar:
             print("Can't determine shortest path: Run RRT first using the run() method!")
             return []
         
-
         # Find all nodes whose is_near_goal property is true
         keys_nodes_near_goal = [key for key, value in self.vertices.items() if value[3] == True]
         vertices_near_goal = {key: value for key, value in self.vertices.items() if key in keys_nodes_near_goal}
@@ -320,13 +319,10 @@ class RRTstar:
         # From this list, find the node with the smallest cost/distance from start to goal
         key_node_with_smallest_cost = min(vertices_near_goal, key=lambda x: vertices_near_goal[x][2])
 
-        # Clear variables that store shortest path
-        self.shortest_path_keys = []
-        self.shortest_path_configs = []
-
         # Search backwards from goal to start to find all the configs for the robot to follow
         key_child_node = key_node_with_smallest_cost
         key_parent_node = self.vertices[key_child_node][2]
+        
         self.shortest_path_keys = []
         while (key_parent_node != 0):
             self.shortest_path_keys.append(key_child_node)
@@ -337,6 +333,7 @@ class RRTstar:
             # Set the child node key as the parent node for the next iteration
             key_child_node = key_parent_node
 
+        self.shortest_path_configs = []
         for key in self.shortest_path_keys:
             self.shortest_path_configs.append(self.vertices[key][0])
 
@@ -583,6 +580,7 @@ class RRTstar:
                             if verbose: print(f"i = {i}: Lower cost route found. Old cost: {current_total_cost}, new cost: {new_total_cost}")
                             self.vertices[key_q_new][2] = key_q_neighbor
                             self.vertices[key_q_new][1] = new_total_cost
+                            self.get_shortest_path()
                 
                 # [8] Check if any of the neighbors can be connected to the start via q_new 
                 #     such that its cost is lower than its current connection
@@ -601,6 +599,7 @@ class RRTstar:
                             if verbose: print(f"i = {i}: Lower cost route found. Old cost: {current_total_cost}, new cost: {new_total_cost}")
                             self.vertices[key_q_neighbor][2] = key_q_new
                             self.vertices[key_q_neighbor][1] = new_total_cost
+                            self.get_shortest_path()
 
                 # [9] If the sample is near the goal, set its property is_near_goal to True
                 #     Additionally we break out of the loop early if the algorithm was set to stop once the goal is reached
