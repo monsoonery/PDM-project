@@ -1,13 +1,15 @@
 import numpy as np
 import random
 import matplotlib.pyplot as plt
-from matplotlib.animation import FuncAnimation
+import os
+from matplotlib.colors import hsv_to_rgb, to_rgba
+from scipy.interpolate import interp1d
 
 import obstacles
 
 # Flags for enabling extra print statements
 debugCollision = False
-debugRRT = False
+debugRRT = True
 
 class RRTstar:
     def __init__(self, l1, l2, l3, room):
@@ -34,11 +36,13 @@ class RRTstar:
         self.shortest_path_keys = []
         self.shortest_path_configs = []
 
+        self.image_id = 0
+
     """--------------------- HELPER FUNCTIONS ---------------------"""
     # Returns a random sample in configuration space
     def get_random_sample(self):
-        x = random.uniform(self.room["width"][0], self.room["width"][1])
-        y = random.uniform(self.room["length"][0], self.room["length"][1])
+        x = random.uniform(self.room["width"][0] + 0.5, self.room["width"][1] - 0.5)
+        y = random.uniform(self.room["length"][0] + 0.5, self.room["length"][1] - 0.5)
         q1 = random.uniform(0, 2*np.pi)
         q2 = random.uniform(-np.pi/2, np.pi/2)
         q3 = random.uniform(-2*np.pi/3, 2*np.pi/3)
@@ -199,7 +203,7 @@ class RRTstar:
         #print(x_close, y_close, z_close)
         return x_close and y_close and z_close
 
-    # This function updates the pyplot to show the RRT* expansion live
+    # This function updates the interactive pyplot to show the RRT* expansion live
     def animate(self):
         plt.clf()
 
@@ -212,10 +216,13 @@ class RRTstar:
         q3_values = [self.vertices[key_node][0][4] for key_node in keys_nodes]
         
         # Plot obstacles
+        transformer = interp1d([0.3, 2.8],[0.2, 1])
         for obstacle in self.obstacles:
+            v = np.float(transformer(obstacle.position()[2]))
             circle = plt.Circle((obstacle.position()[0], obstacle.position()[1]), 
                                 obstacle.radius(), 
-                                color='grey')
+                                facecolor = to_rgba(hsv_to_rgb([0,0,v]), alpha=0.7),
+                                edgecolor = None)
             plt.gca().add_patch(circle)
     
         # Plot nodes
@@ -283,6 +290,12 @@ class RRTstar:
         plt.ylim([-10, 10])
         plt.legend(loc='upper left')
         plt.tight_layout()
+
+        if self.file_directory is not None:
+            filename = os.path.join(file_directory, f"rrt_frame_{self.image_id}.png")
+            plt.savefig(filename)
+            self.image_id += 1
+
         plt.pause(0.1)
 
 
@@ -334,7 +347,7 @@ class RRTstar:
 
         for iter in range(1, num_iterations+1):
             plt.ioff()
-            plt.figure(iter+1)
+            plt.figure(iter+1, figsize=(10, 10))
 
             # Extract datapoints from node list: get x, y, etc of each node
             if iter == 1:
@@ -355,10 +368,13 @@ class RRTstar:
              # Plot obstacles
         
             # Plot obstacles
+            transformer = interp1d([0.3, 2.8],[0.2, 1])
             for obstacle in self.obstacles:
+                v = np.float(transformer(obstacle.position()[2]))
                 circle = plt.Circle((obstacle.position()[0], obstacle.position()[1]), 
                                     obstacle.radius(), 
-                                    color='grey')
+                                    facecolor = to_rgba(hsv_to_rgb([0,0,v]), alpha=0.7),
+                                    edgecolor = None)
                 plt.gca().add_patch(circle)
         
             # Plot nodes
@@ -441,7 +457,7 @@ class RRTstar:
             plt.show()
 
     # Runs the RRT* algorithm (and optionally also RRT) to create a graph/tree
-    def run(self, initial_config, goal_xyz, sample_radius = 2, neighbor_radius=3, n_expansions=1000, stop_when_goal_reached=True, also_run_normal_RRT = False, animate_plot=False, verbose=False):
+    def run(self, initial_config, goal_xyz, sample_radius=3, neighbor_radius=3, n_expansions=1000, stop_when_goal_reached=True, also_run_normal_RRT = False, animate_plot=False, file_directory=None, verbose=False):
         # Initialize variables
         self.goal_xyz = goal_xyz
         self.initial_config = initial_config
@@ -454,8 +470,10 @@ class RRTstar:
             # node ID: [config/coordinates, cost-to-reach-from-start, parent node ID, is_near_goal]
             0: [self.initial_config, 0, 0, False]
         }
+        
         self.shortest_path_configs = []
         self.shortest_path_keys = []
+        
         if also_run_normal_RRT:
             self.nodes = {
                 # DATA STRUCTURE: 
@@ -470,124 +488,140 @@ class RRTstar:
 
         # Prepare plot for live animation
         if animate_plot:
-            plt.figure(1)
+            plt.figure(1, figsize=(6, 6))
             plt.ion() 
+            self.file_directory = file_directory
+            self.image_id = 0
             self.animate()
+            plt.tight_layout()
             plt.show()
-
-        # Main loop
-        node_id = 1
-        print(f"Now running RRT*! This will take a while...")
-        for i in range(0, n_expansions):
-            if verbose: print(f"i = {i}")
-            
-            # [1] Get a random configuration sample q_rand
-            q_rand = self.get_random_sample()
-            if debugRRT: print(f"i = {i}: Sample: {q_rand}")
-
-            # [2] Find the nearest node this sample could be theoretically connected to
-            #     If the sample is too far away from this node, discard this sample
-            key_q_near = min(self.vertices.keys(), 
-                             key=lambda node: self.get_distance_of_two_nodes(q_rand, self.vertices[node][0]))
-            if debugRRT: print(f"i = {i}: Nearest node: {self.vertices[key_q_near][0]}")
-            
-            if self.get_distance_of_two_nodes(q_rand, self.vertices[key_q_near][0]) > sample_radius:
-                if debugRRT: print(f"i = {i}: This sample would be too far away")
-                continue
-
-            # [3] Check if the robot will be in collision at any point between q_near and q_rand
-            #     If there is collision, discard this sample
-            if self.in_collision(self.vertices[key_q_near][0], q_rand):  
-                if debugRRT: print(f"i = {i}: This sample would be in collision (possibly while moving)")
-                continue
-
-            # [-] Code below only runs when we compare the performance of RRT and RRT*
-            if also_run_normal_RRT:
-                # Add q_rand to the node dict
-                key_q_rand = node_id
-                self.nodes[key_q_rand] = q_rand
-
-                # Add an edge to the edges dict
-                # If the nearest node doesn't have edges yet, create an entry in the dict
-                # else append the edge to the nearest node's list of edges
-                distance_q_rand_to_q_near = self.get_distance_of_two_nodes(q_rand, self.nodes[key_q_near])
-                if key_q_near in self.edges:
-                    self.edges[key_q_near].append((key_q_rand, distance_q_rand_to_q_near))
-                else:
-                    self.edges[key_q_near] = [(key_q_rand, distance_q_rand_to_q_near)]
-
-            # [-] Rename the node to make it clear that the next lines of code are part of RRT*
-            q_new = q_rand
-
-            # [4] Cost to reach q_new from start via q_near
-            #     This is currently our "best guess" for shortest path from start to q_new
-            cost_q_near_to_q_new = self.get_distance_of_two_nodes(self.vertices[key_q_near][0], q_new)
-            cost_start_to_q_new_via_q_near = self.vertices[key_q_near][1] + cost_q_near_to_q_new
-
-            # [5] Add an entry for q_new: [config, cost start to node, parent node, is_near_goal]
-            key_q_new = node_id 
-            self.vertices[key_q_new] = [q_new, cost_start_to_q_new_via_q_near, key_q_near, False]
-            
-            # [6] Find all neighbors of q_new, these are candidates for rewiring 
-            keys_q_neighbors = [key_node for key_node in self.vertices.keys() 
-                                if self.get_distance_of_two_nodes(self.vertices[key_node][0], q_new) <= neighbor_radius]
-            if debugRRT: print(f"i = {i}: Neighbors: {keys_q_neighbors}")
-
-            # [7] Check if q_new can be connected to the start via a neighboring node
-            #     such that its cost is lower than its current connection
-            for key_q_neighbor in keys_q_neighbors:
-                current_total_cost = self.vertices[key_q_new][1]
-
-                start_to_q_neighbor_cost = self.vertices[key_q_neighbor][1]
-                q_neighbor_to_q_new_cost = self.get_distance_of_two_nodes(self.vertices[key_q_neighbor][0], q_new)
-                new_total_cost = start_to_q_neighbor_cost + q_neighbor_to_q_new_cost
+        
+        # Main loop with try/catch block to allow stopping the algorithm at any point without losing results
+        try:
+            node_id = 1
+            print(f"Now running RRT*! This will take a while...")
+            for i in range(0, n_expansions):
+                if verbose: print(f"i = {i}")
                 
-                if (new_total_cost < current_total_cost):
-                    if debugRRT: print(f"i = {i}: Candidate found for rewiring q_new to a neighbor")
-                    # Only rewire if this new connection is collision-free
-                    if not self.in_collision(self.vertices[key_q_neighbor][0], q_new):
-                        # Update q_new's cost and parent node ID
-                        if debugRRT: print(f"i = {i}: Lower cost route found. Old cost: {current_total_cost}, new cost: {new_total_cost}")
-                        self.vertices[key_q_new][2] = key_q_neighbor
-                        self.vertices[key_q_new][1] = new_total_cost
-            
-            # [8] Check if any of the neighbors can be connected to the start via q_new 
-            #     such that its cost is lower than its current connection
-            for key_q_neighbor in keys_q_neighbors:
-                current_total_cost = self.vertices[key_q_neighbor][1]
+                # [1] Get a random configuration sample q_rand
+                q_rand = self.get_random_sample()
+                if debugRRT: print(f"i = {i}: Sample: {q_rand}")
 
-                start_to_q_new_cost = self.vertices[key_q_new][1]
-                q_new_to_q_neighbor_cost = self.get_distance_of_two_nodes(q_new, self.vertices[key_q_neighbor][0])
-                new_total_cost = start_to_q_new_cost + q_new_to_q_neighbor_cost
+                # [2] Find the nearest node this sample could be theoretically connected to
+                #     If the sample is too far away from this node, discard this sample
+                key_q_near = min(self.vertices.keys(), 
+                                key=lambda node: self.get_distance_of_two_nodes(q_rand, self.vertices[node][0]))
+                if debugRRT: print(f"i = {i}: Nearest node: {self.vertices[key_q_near][0]}")
+                
+                if self.get_distance_of_two_nodes(q_rand, self.vertices[key_q_near][0]) > sample_radius:
+                    if debugRRT: print(f"i = {i}: This sample would be too far away")
+                    continue
 
-                if (new_total_cost < current_total_cost):
-                    if debugRRT: print(f"i = {i}: Candidate found for rewiring a neighbor to q_new")
-                    # Only rewire if this new connection is collision-free
-                    if not self.in_collision(q_new, self.vertices[key_q_neighbor][0]):
-                        # Update q_neighbor's cost and parent node ID
-                        if debugRRT: print(f"i = {i}: Lower cost route found. Old cost: {current_total_cost}, new cost: {new_total_cost}")
-                        self.vertices[key_q_neighbor][2] = key_q_new
-                        self.vertices[key_q_neighbor][1] = new_total_cost
+                # [3] Check if the robot will be in collision with the floor OR an obstacle 
+                #     at any point between q_near and q_rand. If there is collision, discard this sample
+                q_rand_z_value = self.get_endpoint_coordinates(q_rand)[2]
+                if q_rand_z_value <= 0.1:
+                    if debugRRT: print(f"i = {i}: This sample would cause the endpoint to be in collision with the floor")
+                    continue
+                if self.in_collision(self.vertices[key_q_near][0], q_rand):  
+                    if debugRRT: print(f"i = {i}: This sample would be in collision with an obstacle (possibly while moving)")
+                    continue
+                
+                # [-] Code below only runs when we compare the performance of RRT and RRT*
+                if also_run_normal_RRT:
+                    # Add q_rand to the node dict
+                    key_q_rand = node_id
+                    self.nodes[key_q_rand] = q_rand
 
-            # [9] If the sample is near the goal, set its property is_near_goal to True
-            #     Additionally we break out of the loop early if the algorithm was set to stop once the goal is reached
-            if self.config_is_near_goal(q_rand, goal_xyz):
-                if debugRRT: print(f"i = {i}: This configuration is sufficiently close to the goal.")
-                self.vertices[key_q_new][3] = True
-                self.get_shortest_path()
-                if stop_when_goal_reached:
-                    print(f"Goal reached after {i} iterations. Stopping algorithm.")
-                    break
-            
-            # Update live plot
-            if animate_plot: self.animate()
+                    # Add an edge to the edges dict
+                    # If the nearest node doesn't have edges yet, create an entry in the dict
+                    # else append the edge to the nearest node's list of edges
+                    distance_q_rand_to_q_near = self.get_distance_of_two_nodes(q_rand, self.nodes[key_q_near])
+                    if key_q_near in self.edges:
+                        self.edges[key_q_near].append((key_q_rand, distance_q_rand_to_q_near))
+                    else:
+                        self.edges[key_q_near] = [(key_q_rand, distance_q_rand_to_q_near)]
 
-            # Increment node ID
-            node_id += 1
-            if not debugRRT: print(f"node_id = {node_id}")
+                # [-] Rename the node to make it clear that the next lines of code are part of RRT*
+                q_new = q_rand
+                # Update figure with this new node + edge
+                if animate_plot: self.animate()
 
-            if i == n_expansions: 
-                print(f"Max number of iterations ({n_expansions}) reached. Stopping algorithm.")
+                # [4] Cost to reach q_new from start via q_near
+                #     This is currently our "best guess" for shortest path from start to q_new
+                cost_q_near_to_q_new = self.get_distance_of_two_nodes(self.vertices[key_q_near][0], q_new)
+                cost_start_to_q_new_via_q_near = self.vertices[key_q_near][1] + cost_q_near_to_q_new
+
+                # [5] Add an entry for q_new: [config, cost start to node, parent node, is_near_goal]
+                key_q_new = node_id 
+                self.vertices[key_q_new] = [q_new, cost_start_to_q_new_via_q_near, key_q_near, False]
+                
+                # [6] Find all neighbors of q_new, these are candidates for rewiring 
+                keys_q_neighbors = [key_node for key_node in self.vertices.keys() 
+                                    if self.get_distance_of_two_nodes(self.vertices[key_node][0], q_new) <= neighbor_radius]
+                if debugRRT: print(f"i = {i}: Neighbors: {keys_q_neighbors}")
+
+                # [7] Check if q_new can be connected to the start via a neighboring node
+                #     such that its cost is lower than its current connection
+                for key_q_neighbor in keys_q_neighbors:
+                    current_total_cost = self.vertices[key_q_new][1]
+
+                    start_to_q_neighbor_cost = self.vertices[key_q_neighbor][1]
+                    q_neighbor_to_q_new_cost = self.get_distance_of_two_nodes(self.vertices[key_q_neighbor][0], q_new)
+                    new_total_cost = start_to_q_neighbor_cost + q_neighbor_to_q_new_cost
+                    
+                    if (new_total_cost < current_total_cost):
+                        if debugRRT: print(f"i = {i}: Candidate found for rewiring q_new to a neighbor")
+                        # Only rewire if this new connection is collision-free
+                        if not self.in_collision(self.vertices[key_q_neighbor][0], q_new):
+                            # Update q_new's cost and parent node ID
+                            if debugRRT: print(f"i = {i}: Lower cost route found. Old cost: {current_total_cost}, new cost: {new_total_cost}")
+                            self.vertices[key_q_new][2] = key_q_neighbor
+                            self.vertices[key_q_new][1] = new_total_cost
+                            # Update figure with this new node + edge
+                            if animate_plot: self.animate()
+                
+                # [8] Check if any of the neighbors can be connected to the start via q_new 
+                #     such that its cost is lower than its current connection
+                for key_q_neighbor in keys_q_neighbors:
+                    current_total_cost = self.vertices[key_q_neighbor][1]
+
+                    start_to_q_new_cost = self.vertices[key_q_new][1]
+                    q_new_to_q_neighbor_cost = self.get_distance_of_two_nodes(q_new, self.vertices[key_q_neighbor][0])
+                    new_total_cost = start_to_q_new_cost + q_new_to_q_neighbor_cost
+
+                    if (new_total_cost < current_total_cost):
+                        if debugRRT: print(f"i = {i}: Candidate found for rewiring a neighbor to q_new")
+                        # Only rewire if this new connection is collision-free
+                        if not self.in_collision(q_new, self.vertices[key_q_neighbor][0]):
+                            # Update q_neighbor's cost and parent node ID
+                            if debugRRT: print(f"i = {i}: Lower cost route found. Old cost: {current_total_cost}, new cost: {new_total_cost}")
+                            self.vertices[key_q_neighbor][2] = key_q_new
+                            self.vertices[key_q_neighbor][1] = new_total_cost
+                            # Update figure with this new node + edge
+                            if animate_plot: self.animate()
+
+                # [9] If the sample is near the goal, set its property is_near_goal to True
+                #     Additionally we break out of the loop early if the algorithm was set to stop once the goal is reached
+                if self.config_is_near_goal(q_rand, goal_xyz):
+                    if debugRRT: print(f"i = {i}: This configuration is sufficiently close to the goal.")
+                    self.vertices[key_q_new][3] = True
+                    self.get_shortest_path()
+                    if stop_when_goal_reached:
+                        print(f"Goal reached after {i} iterations. Stopping algorithm.")
+                        break
+                
+                # Update live plot
+                if animate_plot: self.animate()
+
+                # Increment node ID
+                node_id += 1
+                if not debugRRT: print(f"node_id = {node_id}")
+
+                if i == n_expansions: 
+                    print(f"Max number of iterations ({n_expansions}) reached. Stopping algorithm.")
+        except KeyboardInterrupt:
+            print("Algorithm interrupted.")
         
         return
 
@@ -598,7 +632,7 @@ if __name__ == "__main__":
     room = {
             "width": [-10, 10],
             "length": [-10, 10],
-            "height": 8,
+            "height": 3,
             "margin_of_closeness_to_goal": 1
             }
     
@@ -609,13 +643,15 @@ if __name__ == "__main__":
     goal = [9, 9, 1]
 
     # RRT parameters
-    sample_radius = 3
-    neighbor_radius = 3
-    n_expansions = 10000
-    also_run_normal_RRT = False
-    stop_when_goal_reached = True
-    animate_plot = True
-    verbose = True
+    sample_radius = 4 # For a random configuration sample, if there are no existing nodes within this radius, it is too far away and discarded immediately
+    neighbor_radius = 3 # Radius for finding neighbors that can be rewired to a given node
+    n_expansions = 10000 # Number of iterations to run the algorithm for
+    also_run_normal_RRT = False # If True, both RRT and RRT* algorithms will be executed 
+    stop_when_goal_reached = True # If True, algorithm stops as soon as a valid solution is found instead of up to n_expansions
+    animate_plot = True # If True, plots RRT* graph nodes and edges in real-time
+    verbose = True # If True, prints the iterations (i = 1, i = 2 etc.) to the terminal to keep track of progress
+    #file_directory = None # Enter directory to save plot images (for generating animation). Set to None if you don't want to save these
+    file_directory = "D:\\My Files\\Documents\\Studie\\RO47005 Planning & Decision Making\\PDM-project\\plot_images" 
 
     rrt.run(config_s, goal, 
             sample_radius=sample_radius,
@@ -624,6 +660,7 @@ if __name__ == "__main__":
             stop_when_goal_reached=stop_when_goal_reached, 
             also_run_normal_RRT=also_run_normal_RRT,
             animate_plot=animate_plot,
+            file_directory=file_directory,
             verbose=verbose)
 
     print(f"Shortest path configs: {rrt.get_shortest_path()}")
