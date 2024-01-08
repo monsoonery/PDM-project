@@ -10,7 +10,6 @@ import obstacles
 
 # Flags for enabling extra print statements
 debugCollision = False
-debugRRT = True
 
 class RRTstar:
     def __init__(self, l1, l2, l3, room):
@@ -510,26 +509,26 @@ class RRTstar:
                 
                 # [1] Get a random configuration sample q_rand
                 q_rand = self.get_random_sample()
-                if debugRRT: print(f"i = {i}: Sample: {q_rand}")
+                if verbose: print(f"i = {i}: Sample: {q_rand}")
 
                 # [2] Find the nearest node this sample could be theoretically connected to
                 #     If the sample is too far away from this node, discard this sample
                 key_q_near = min(self.vertices.keys(), 
                                 key=lambda node: self.get_distance_of_two_nodes(q_rand, self.vertices[node][0]))
-                if debugRRT: print(f"i = {i}: Nearest node: {self.vertices[key_q_near][0]}")
+                if verbose: print(f"i = {i}: Nearest node: {self.vertices[key_q_near][0]}")
                 
                 if self.get_distance_of_two_nodes(q_rand, self.vertices[key_q_near][0]) > sample_radius:
-                    if debugRRT: print(f"i = {i}: This sample would be too far away")
+                    if verbose: print(f"i = {i}: This sample would be too far away")
                     continue
 
                 # [3] Check if the robot will be in collision with the floor OR an obstacle 
                 #     at any point between q_near and q_rand. If there is collision, discard this sample
                 q_rand_z_value = self.get_endpoint_coordinates(q_rand)[2]
                 if q_rand_z_value <= 0.1:
-                    if debugRRT: print(f"i = {i}: This sample would cause the endpoint to be in collision with the floor")
+                    if verbose: print(f"i = {i}: This sample would cause the endpoint to be in collision with the floor")
                     continue
                 if self.in_collision(self.vertices[key_q_near][0], q_rand):  
-                    if debugRRT: print(f"i = {i}: This sample would be in collision with an obstacle (possibly while moving)")
+                    if verbose: print(f"i = {i}: This sample would be in collision with an obstacle (possibly while moving)")
                     continue
                 
                 # [-] Code below only runs when we compare the performance of RRT and RRT*
@@ -564,7 +563,7 @@ class RRTstar:
                 # [6] Find all neighbors of q_new, these are candidates for rewiring 
                 keys_q_neighbors = [key_node for key_node in self.vertices.keys() 
                                     if self.get_distance_of_two_nodes(self.vertices[key_node][0], q_new) <= neighbor_radius]
-                if debugRRT: print(f"i = {i}: Neighbors: {keys_q_neighbors}")
+                if verbose: print(f"i = {i}: Neighbors: {keys_q_neighbors}")
 
                 # [7] Check if q_new can be connected to the start via a neighboring node
                 #     such that its cost is lower than its current connection
@@ -576,11 +575,11 @@ class RRTstar:
                     new_total_cost = start_to_q_neighbor_cost + q_neighbor_to_q_new_cost
                     
                     if (new_total_cost < current_total_cost):
-                        if debugRRT: print(f"i = {i}: Candidate found for rewiring q_new to a neighbor")
+                        if verbose: print(f"i = {i}: Candidate found for rewiring q_new to a neighbor")
                         # Only rewire if this new connection is collision-free
                         if not self.in_collision(self.vertices[key_q_neighbor][0], q_new):
                             # Update q_new's cost and parent node ID
-                            if debugRRT: print(f"i = {i}: Lower cost route found. Old cost: {current_total_cost}, new cost: {new_total_cost}")
+                            if verbose: print(f"i = {i}: Lower cost route found. Old cost: {current_total_cost}, new cost: {new_total_cost}")
                             self.vertices[key_q_new][2] = key_q_neighbor
                             self.vertices[key_q_new][1] = new_total_cost
                             # Update figure with this new node + edge
@@ -596,11 +595,11 @@ class RRTstar:
                     new_total_cost = start_to_q_new_cost + q_new_to_q_neighbor_cost
 
                     if (new_total_cost < current_total_cost):
-                        if debugRRT: print(f"i = {i}: Candidate found for rewiring a neighbor to q_new")
+                        if verbose: print(f"i = {i}: Candidate found for rewiring a neighbor to q_new")
                         # Only rewire if this new connection is collision-free
                         if not self.in_collision(q_new, self.vertices[key_q_neighbor][0]):
                             # Update q_neighbor's cost and parent node ID
-                            if debugRRT: print(f"i = {i}: Lower cost route found. Old cost: {current_total_cost}, new cost: {new_total_cost}")
+                            if verbose: print(f"i = {i}: Lower cost route found. Old cost: {current_total_cost}, new cost: {new_total_cost}")
                             self.vertices[key_q_neighbor][2] = key_q_new
                             self.vertices[key_q_neighbor][1] = new_total_cost
                             # Update figure with this new node + edge
@@ -609,7 +608,7 @@ class RRTstar:
                 # [9] If the sample is near the goal, set its property is_near_goal to True
                 #     Additionally we break out of the loop early if the algorithm was set to stop once the goal is reached
                 if self.config_is_near_goal(q_rand, goal_xyz):
-                    if debugRRT: print(f"i = {i}: This configuration is sufficiently close to the goal.")
+                    if verbose: print(f"i = {i}: This configuration is sufficiently close to the goal.")
                     self.vertices[key_q_new][3] = True
                     self.get_shortest_path()
                     if stop_when_goal_reached:
@@ -621,7 +620,7 @@ class RRTstar:
 
                 # Increment node ID
                 node_id += 1
-                if not debugRRT: print(f"node_id = {node_id}")
+                if verbose: print(f"node_id = {node_id}")
 
                 if i == n_expansions: 
                     print(f"Max number of iterations ({n_expansions}) reached. Stopping algorithm.")
@@ -648,14 +647,14 @@ if __name__ == "__main__":
     goal = [9, 9, 1]
 
     # RRT parameters
-    sample_radius = 4 # For a random configuration sample, if there are no existing nodes within this radius, it is too far away and discarded immediately
-    neighbor_radius = 3 # Radius for finding neighbors that can be rewired to a given node
-    n_expansions = 10000 # Number of iterations to run the algorithm for
-    also_run_normal_RRT = False # If True, both RRT and RRT* algorithms will be executed 
-    stop_when_goal_reached = True # If True, algorithm stops as soon as a valid solution is found instead of up to n_expansions
-    animate_plot = True # If True, plots RRT* graph nodes and edges in real-time
-    verbose = True # If True, prints the iterations (i = 1, i = 2 etc.) to the terminal to keep track of progress
-    #file_directory = None # Enter directory to save plot images (for generating animation). Set to None if you don't want to save these
+    sample_radius = 4              # For a random configuration sample, if there are no existing nodes within this radius, it is too far away and discarded immediately
+    neighbor_radius = 3            # Radius for finding neighbors that can be rewired to a given node
+    n_expansions = 10000           # Number of iterations to run the algorithm for
+    also_run_normal_RRT = False    # If True, both RRT and RRT* algorithms will be executed 
+    stop_when_goal_reached = False # If True, algorithm stops as soon as a valid solution is found instead of up to n_expansions
+    animate_plot = True            # If True, plots RRT* graph nodes and edges in real-time
+    verbose = True                 # If True, prints extra information to the console for each iteration step
+    #file_directory = None         # Enter directory to save plot images (for generating animation). Set to None if you don't want to save these
     file_directory = "D:\\My Files\\Documents\\Studie\\RO47005 Planning & Decision Making\\PDM-project\\plot_images" 
 
     rrt.run(initial_config, goal, 
