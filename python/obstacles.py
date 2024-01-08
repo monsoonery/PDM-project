@@ -402,7 +402,7 @@ hanglampsphere1_1= SphereObstacle(
 #========================================================================
 
 
-# Room obstacle hanglamp linksonder
+# Room obstacle hanglamp boven
 #========================================================================
 hanglampsphere2_1_dict = {
     "type": "sphere",
