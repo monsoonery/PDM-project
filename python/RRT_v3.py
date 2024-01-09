@@ -314,7 +314,7 @@ class RRTstar:
         vertices_near_goal = {key: value for key, value in self.vertices.items() if key in keys_nodes_near_goal}
         # If that list is empty, RRT* has not found a solution
         if not keys_nodes_near_goal:
-            print("Can't determine shortest path: no solution was found (yet). Try to run RRT* again with a higher number of iterations")
+            #print("Can't determine shortest path: no solution was found (yet). Try to run RRT* again with a higher number of iterations")
             return []
         # From this list, find the node with the smallest cost/distance from start to goal
         key_node_with_smallest_cost = min(vertices_near_goal, key=lambda x: vertices_near_goal[x][2])
@@ -636,7 +636,7 @@ if __name__ == "__main__":
             "width": [-10, 10],
             "length": [-10, 10],
             "height": 3,
-            "margin_of_closeness_to_goal": 1
+            "margin_of_closeness_to_goal": 1.5
             }
     
     rrt = RRTstar(l1=0.4, l2=0.7, l3=0.6, room=room)

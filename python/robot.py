@@ -152,7 +152,7 @@ class Robot:
             self.position_ob[2] = self.angle_interval(self.position_ob[2])
             self.position_ob[3] = self.angle_interval(self.position_ob[3])
             self.position_ob[4] = self.angle_interval(self.position_ob[4])
-            print(['%.2f' % elem for elem in self.position_ob],['%.2f' % elem for elem in self.goal])
+            #print(['%.2f' % elem for elem in self.position_ob],['%.2f' % elem for elem in self.goal])
             
             if (self.position_ob[0] >= self.goal[0]-self.interval and self.position_ob[0] <= self.goal[0]+self.interval and 
                 self.position_ob[1] >= self.goal[1]-self.interval and self.position_ob[1] <= self.goal[1]+self.interval and
