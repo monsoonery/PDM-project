@@ -1,13 +1,4 @@
-
-report_images/a1q11.pptx
-report_images/diggingmyowngrave.mw
-report_images/ewaja.png
-report_images/ewaja2.png
-report_images/ewaja3.png
-report_images/ewaja3d.png
-report_images/ewaja3d2.png
-report_images/ewajajointless.png
-python/__pycache__/obstacles.cpython-311.pyc
+report_images
 *.pyc
-*.pyc
-*.pyc
+*.png
+configs.txt
