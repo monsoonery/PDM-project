@@ -1,6 +1,6 @@
 import time
 import matplotlib.pyplot as plt
-import random
+import os
 import numpy as np
 
 import robot
@@ -28,20 +28,19 @@ if __name__ == "__main__":
           }
 
      # RRT parameters
-     sample_radius = 5              # For a random configuration sample, if there are no existing nodes within this radius, it is too far away and discarded immediately
-     neighbor_radius = 3            # Radius for finding neighbors that can be rewired to a given node
+     sample_radius = 3              # For a random configuration sample, if there are no existing nodes within this radius, it is too far away and discarded immediately
+     neighbor_radius = 5            # Radius for finding neighbors that can be rewired to a given node
      n_expansions = 10000           # Number of iterations to run the algorithm for
      also_run_normal_RRT = False    # If True, both RRT and RRT* algorithms will be executed 
-     stop_when_goal_reached = False # If True, algorithm stops as soon as a valid solution is found instead of up to n_expansions
+     stop_when_goal_reached = True  # If True, algorithm stops as soon as a valid solution is found instead of up to n_expansions
      animate_plot = True            # If True, plots RRT* graph nodes and edges in real-time
      verbose = False                # If True, prints extra information to the console for each iteration step
      #file_directory = None         # Enter directory to save plot images (for generating animation). Set to None if you don't want to save these
-     file_directory = "D:\\My Files\\Documents\\Studie\\RO47005 Planning & Decision Making\\PDM-project\\plot_images" 
+     file_directory = "D:\\My Files\\Documents\\Studie\\RO47005 Planning & Decision Making\\PDM-project\\case3" 
 
      # Start configuration and goal xyz-coordinates
      initial_config = [-9.5, -9.5, 0, 0, (1/2)*np.pi]
      goal = [9, 9, 1]
-
 
 
      # Create RRT algorithm object and run RRTstar
@@ -65,6 +64,11 @@ if __name__ == "__main__":
      # Retrieve the configurations that result in the shortest path
      result = rrt.get_shortest_path()
      print(f"Shortest path configs: {result}")
+     
+     filename = os.path.join(file_directory, "configs.txt")
+     f = open(filename, 'a+' )
+     f.write("Shortest path configs: " + repr(result) + '\n' )
+     f.close()
 
      # Display results (the shortest path) in a final figure
      rrt.plot_results(also_run_normal_RRT)
