@@ -8,6 +8,12 @@ RO47005 Planning & Decision Making - Project
 ## About this project
 We programmed the RRT* algorithm in Python from scratch, and used _gym\_envs\_urdf_ by Max Spahn for simulating the robot. The mobile manipulator is represented by a simplified URDF. The obstacles are added into the simulation environment using objects from _mpscenes.obstacles_. 
 
+Our implementation uses several classes in separate files to handle motion planning and simulation. The following files contain all classes and are stores in the src folder:
+- `environment.py`: For creating and launching the simulation environment with the robot and obstacles
+- `robot.py`: Contains the parameters (dimensions, movement functions etc.) of the robot used in the simulation environment.
+- `obstacles.py`: Contains the definitions of _mpscenes.obstacles_ objects that are used by both `RRT_v3.py` and `environment.py`
+- `RRT_v3.py`: Contains all code related to running RRT*, including random sampling, collision detection, and generating graphs and plots.
+
 ## Getting started
 ### Prerequisites
 This project has been built and tested on Windows 10, so consider these instructions to be for Windows only.
@@ -42,7 +48,7 @@ python main_simulation_only.py
 
 This will launch a simulation window and should show our robot in its environment following a path.
 
-To edit the path the robot follows, open `python main_simulation_only.py` and edit the list of configurations in the variable `results`. We have included the paths from our tests in the folder `configs` as .txt files. You can copy-paste the contexts of these .txt files into the variable `results`.
+To edit the path the robot follows, open `main_simulation_only.py` and edit the list of configurations in the variable `results`. We have included the paths from our tests in the folder `configs` as .txt files. You can copy-paste the contexts of these .txt files into the variable `results`.
 
 ## Reproducing our test results
 The file `main.py` contains a list of parameters that can be edited to run the various cases mentioned in our report. The most relevant variables are:

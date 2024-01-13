@@ -23,6 +23,7 @@ class Robot:
         self.interval = 0.01
         self.position_ob = self.ob["robot_0"]["joint_state"]["position"]
     
+    """--------------------- HELPER FUNCTIONS ---------------------"""
     def angle_interval(self, q):
         while q <= -np.pi: q = q+2*np.pi
         while q >= np.pi : q = q-2*np.pi
@@ -141,6 +142,8 @@ class Robot:
         # time.sleep(1)
         return distance_goal, angle_between_goals, time_to_reach_goal
     
+    """--------------------- ACTUAL FUNCTIONS ---------------------"""
+
     # Main function that moves entire mobile manipulator from point one to point two (the "goal")
     def move_to_goal(self, goal):
         self.goal = goal
