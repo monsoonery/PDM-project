@@ -26,6 +26,13 @@ You need Python version 3.8 or higher. Also install the _gym\_envs\_urdf_ packag
 pip3 install urdfenvs
 ```
 
+Now, clone this repo:
+```
+git clone git@github.com:monsoonery/PDM-project.git
+```
+Or download the source code as a zip file.
+
+
 ## Run
 ### RRT* + simulation
 **Inside the PDM-project folder**, open a command prompt window and run:
