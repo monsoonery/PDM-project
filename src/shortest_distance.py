@@ -1,6 +1,10 @@
 import numpy as np
 import locale
 
+"""This file calculates the distance value of a given list of configurations. 
+It is not used by main.py, only for generating "shortest path distance" results in the report.
+"""
+
 locale.setlocale(locale.LC_NUMERIC, "en_NL.UTF-8")
 def get_distance_of_two_nodes(node_1, node_2):
         x1, y1, q1_node1, q2_node1, q3_node1 = node_1
