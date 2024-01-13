@@ -6,7 +6,7 @@ January 13th, 2024\
 RO47005 Planning & Decision Making - Project
 
 ## About this project
-We programmed the RRT* algorithm in Python from scratch, and used _gym\_envs\_urdf_ by Max Spahn for simulating the robot. The mobile manipulator is represented by a simplified URDF. The obstacles are added into the simulation environment using objects from mpscenes.obstacles. 
+We programmed the RRT* algorithm in Python from scratch, and used _gym\_envs\_urdf_ by Max Spahn for simulating the robot. The mobile manipulator is represented by a simplified URDF. The obstacles are added into the simulation environment using objects from _mpscenes.obstacles_. 
 
 ## Getting started
 ### Prerequisites
