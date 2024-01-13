@@ -51,7 +51,7 @@ python main_simulation_only.py
 
 This will launch a simulation window and should show our robot in its environment following a path.
 
-To edit the path the robot follows, open `main_simulation_only.py` and edit the list of configurations in the variable `results`. We have included the paths from our tests in the folder `configs` as .txt files. You can copy-paste the contexts of these .txt files into the variable `results`.
+To edit the path the robot follows, open `main_simulation_only.py` and change the list of configurations in the variable `results`. **We have included the resulting paths from our tests in the folder `configs` as .txt files. You can copy-paste the contexts of these .txt files into the variable `results`.**
 
 ## Reproducing our test results
 The file `main.py` contains a list of parameters that can be edited to run the various cases mentioned in our report. The most relevant variables are:
