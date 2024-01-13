@@ -48,44 +48,50 @@ The file `main.py` contains a list of parameters that can be edited to run the v
 For transparency, the following sections show the parameters we used for each test case:
 
 ### Case 1.1:
+```
 sample_radius = 3
 neighbor_radius = 3 
 n_expansions = 10000
 also_run_normal_RRT = False
 stop_when_goal_reached = True
+```
 
 ### Case 1.2:
+```
 sample_radius = 5
 neighbor_radius = 3 
 n_expansions = 10000
 also_run_normal_RRT = False
 stop_when_goal_reached = True 
+```
 
 ### Case 1.3:
+```
 sample_radius = 3
 neighbor_radius = 3 
 n_expansions = 10000
 also_run_normal_RRT = False
 stop_when_goal_reached = True
+```
 
 ### Case 2.1:
+```
 sample_radius = 5	
 neighbor_radius = 3 	
 n_expansions = 600	
 also_run_normal_RRT = False	
 stop_when_goal_reached = False	
-animate_plot = True 	
-verbose = False	
+```
 
 **Additionally,** in obstacles.py, set `block_middle = True` to ensure the extra obstacles are INCLUDED for this case!
 
 ### Case 2.2:
+```
 sample_radius = 5	
 neighbor_radius = 3 	
 n_expansions = 600	
 also_run_normal_RRT = False	
 stop_when_goal_reached = False	
-animate_plot = True 	
-verbose = False	
+```
 
 **Additionally,** in obstacles.py, set `block_middle = False` to ensure the extra obstacles are EXCLUDED for this case!
