@@ -23,14 +23,26 @@ Inside the PDM-project folder, open a command prompt window and run:
 ```
 python main.py
 ```
+
+This will launch a matplotlib plot window*, in which new nodes and edges should appear as time goes on. 
+
+**Note:** depending on the chosen parameters, random chance, and the computing power of your device, the calculations can take anywhere form 5 minutes to 3 hours! As such, we added an option to stop the algorithm at any point _without terminating the entire Python script_. For this, make sure the cmd/Powershell window is in focus, and then press `Ctrl + C`. 
+
+After RRT* is done running, a final plot will be shown, and the number of iterations, elapsed time, and configurations for the shortest path will be printed to the terminal.
+- If a path was found, closing the plot window will automatically launch the simulation of the robot following this path . 
+- If no path was found, closing the plot window open and close the simulation window immediately.
+
+*only if `animate_plot = True`, see "Reproducing our test results" below
+
 ### Simulation only
 Inside the PDM-project folder, open a command prompt window and run:
 ```
 python main_simulation_only.py
 ```
 
-This will launch a pybullet window and should show our robot in its environment following a path.
-To edit the path the robot follows, open `python main_simulation_only.py` and edit the list of configurations in the variable `results`. For convenience, we have included the paths from our tests in the folder `configs` as .txt files. You can copy-paste the contexts of these .txt files into the variable `results`.
+This will launch a simulation window and should show our robot in its environment following a path.
+
+To edit the path the robot follows, open `python main_simulation_only.py` and edit the list of configurations in the variable `results`. We have included the paths from our tests in the folder `configs` as .txt files. You can copy-paste the contexts of these .txt files into the variable `results`.
 
 ## Reproducing our test results
 The file `main.py` contains a list of parameters that can be edited to run the various cases mentioned in our report. The most relevant variables are:
@@ -41,8 +53,8 @@ The file `main.py` contains a list of parameters that can be edited to run the v
     - Trial 3: seed 14
 2. `sample_radius`: For a random configuration sample, if there are no existing nodes within this radius, it is too far away and discarded immediately
 3. `neighbor_radius`: Radius for finding neighbors that can be rewired to a given node
-4. `n_expansions = 1000`: Number of (maximum) iterations to run the algorithm for
-5. `stop_when_goal_reached = True`: If True, algorithm stops as soon as a valid solution is found instead of up to n_expansions
+4. `n_expansions`: Number of (maximum) iterations to run the algorithm for
+5. `stop_when_goal_reached`: If True, algorithm stops as soon as a valid solution is found instead of up to n_expansions
 6. `animate_plot`: If True, plots RRT* graph nodes and edges in real-time
 
 For transparency, the following sections show the parameters we used for each test case:
