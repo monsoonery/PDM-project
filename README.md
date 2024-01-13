@@ -10,9 +10,10 @@ We programmed the RRT* algorithm in Python from scratch, and used _gym\_envs\_ur
 
 Our implementation uses several classes in separate files to handle motion planning and simulation. They are stored in the `src` folder:
 - `environment.py`: For creating and launching the simulation environment with the robot and obstacles
-- `robot.py`: Contains the parameters (dimensions, movement functions etc.) of the robot used in the simulation environment.
-- `obstacles.py`: Contains the definitions of _mpscenes.obstacles_ objects that are used by both `RRT_v3.py` and `environment.py`
+- `robot.py`: Contains the parameters and movement functions of the robot used in the simulation environment.
 - `RRT_v3.py`: Contains all code related to running RRT*, including random sampling, collision detection, and generating graphs and plots.
+- `obstacles.py`: Contains the definitions of _mpscenes.obstacles_ objects that are used by both `RRT_v3.py` and `environment.py`
+
 
 All code files are readable on their own and have comments. 
 
