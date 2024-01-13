@@ -1,14 +1,14 @@
+import os
 import numpy as np
 import random
+import glob
 import matplotlib.pyplot as plt
-import os
 from matplotlib.colors import hsv_to_rgb, to_rgba
 from scipy.interpolate import interp1d
-import glob
 
-import obstacles
+from src import obstacles
 
-# Flags for enabling extra print statements
+# Flag for enabling extra print statements
 debugCollision = False
 
 class RRTstar:
@@ -212,9 +212,9 @@ class RRTstar:
         keys_nodes = self.vertices.keys()
         x_values = [self.vertices[key_node][0][0] for key_node in keys_nodes]
         y_values = [self.vertices[key_node][0][1] for key_node in keys_nodes]
-        q1_values = [self.vertices[key_node][0][2] for key_node in keys_nodes]
-        q2_values = [self.vertices[key_node][0][3] for key_node in keys_nodes]
-        q3_values = [self.vertices[key_node][0][4] for key_node in keys_nodes]
+        #q1_values = [self.vertices[key_node][0][2] for key_node in keys_nodes]
+        #q2_values = [self.vertices[key_node][0][3] for key_node in keys_nodes]
+        #q3_values = [self.vertices[key_node][0][4] for key_node in keys_nodes]
         
         # Plot obstacles
         transformer = interp1d([0.3, 2.8],[0.2, 1])
@@ -631,6 +631,7 @@ class RRTstar:
         
 
 if __name__ == "__main__":
+    import obstacles
     # env params
     room = {
             "width": [-10, 10],
@@ -654,7 +655,7 @@ if __name__ == "__main__":
     animate_plot = True            # If True, plots RRT* graph nodes and edges in real-time
     verbose = True                 # If True, prints extra information to the console for each iteration step
     #file_directory = None         # Enter directory to save plot images (for generating animation). Set to None if you don't want to save these
-    file_directory = "D:\\My Files\\Documents\\Studie\\RO47005 Planning & Decision Making\\PDM-project\\plot_images" 
+    file_directory = "D:\\My Files\\Documents\\Studie\\RO47005 Planning & Decision Making\\PDM-project\\plot_output" 
 
     rrt.run(initial_config, goal, 
             sample_radius=sample_radius,
