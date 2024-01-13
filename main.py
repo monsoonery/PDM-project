@@ -9,7 +9,7 @@ from src import environment
 
 """
 This file first runs RRT* to find a path for the robot, then launches the simulation for the robot to follow
-the found path. You can edit the variable below the comment "RRT parameters" to explore the different features
+the found path. You can edit the variables below the comment "RRT* parameters" to explore the different features
 of our RRT* implementation. Please do not edit any other variables.
 """
 
@@ -19,6 +19,19 @@ def print_time(name_step):
     print(name_step, " : ", current_time)
 
 if __name__ == "__main__":
+     # RRT* parameters
+     random.seed(14)                # Random seed for sampling
+     sample_radius = 5              # For a random configuration sample, if there are no existing nodes within this radius, it is too far away and discarded immediately
+     neighbor_radius = 3            # Radius for finding neighbors that can be rewired to a given node
+     n_expansions = 1000            # Number of (maximum) iterations to run the algorithm for
+     stop_when_goal_reached = True  # If True, algorithm stops as soon as a valid solution is found instead of up to n_expansions
+     animate_plot = True            # If True, plots RRT* graph nodes and edges in real-time
+     verbose = False                # If True, prints extra information to the console for each iteration step
+     file_directory = None          # Absolute file path to save live plot images (for generating animation). Set to None if you don't want to save these
+     #file_directory = "D:\\My Files\\Documents\\Studie\\RO47005 Planning & Decision Making\\PDM-project\\plot_output" 
+
+
+
      # Mobile manipulator dimensions (from URDF)
      l1 = 0.4
      l2 = 0.7
@@ -32,24 +45,11 @@ if __name__ == "__main__":
           "margin_of_closeness_to_goal": 1.5
           }
 
-     # RRT parameters
-     random.seed(42)                # Random seed for the algorithm
-     sample_radius = 5              # For a random configuration sample, if there are no existing nodes within this radius, it is too far away and discarded immediately
-     neighbor_radius = 3            # Radius for finding neighbors that can be rewired to a given node
-     n_expansions = 1000            # Number of (maximum) iterations to run the algorithm for
-     stop_when_goal_reached = True  # If True, algorithm stops as soon as a valid solution is found instead of up to n_expansions
-     animate_plot = True            # If True, plots RRT* graph nodes and edges in real-time
-     verbose = False                # If True, prints extra information to the console for each iteration step
-     file_directory = None          # Absolute file path to save live plot images (for generating animation). Set to None if you don't want to save these
-     #file_directory = "D:\\My Files\\Documents\\Studie\\RO47005 Planning & Decision Making\\PDM-project\\case5" 
-
      # Start configuration and goal xyz-coordinates
      initial_config = [-9.5, -9.5, 0, 0, (1/2)*np.pi]
      goal = [9, 9, 1]
 
-
-
-     # Create RRT algorithm object and run RRTstar
+     # Create RRT* algorithm object and run RRTstar
      rrt = RRTstar.RRTstar(l1, l2, l3, room)
      start_time_RRT = time.time()
      rrt.run(initial_config, goal, 
@@ -70,7 +70,7 @@ if __name__ == "__main__":
      result = rrt.get_shortest_path()
      print(f"Shortest path configs: {result}")
 
-     # Store configurations in same folder as live plot images
+     # Store configurations of shortest path in same folder as live plot images
      if file_directory:
           filename = os.path.join(file_directory, "configs.txt")
           f = open(filename, 'a+' )
@@ -93,6 +93,6 @@ if __name__ == "__main__":
           time.sleep(1)
           print_time("Done Moving")
 
-     time.sleep(10)
+     time.sleep(1)
      env.close_simulation()
 
