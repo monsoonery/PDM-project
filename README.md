@@ -14,7 +14,6 @@ Our implementation uses several classes in separate files to handle motion plann
 - `RRT_v3.py`: Contains all code related to running RRT*, including random sampling, collision detection, and generating graphs and plots.
 - `obstacles.py`: Contains the definitions of _mpscenes.obstacles_ objects that are used by both `RRT_v3.py` and `environment.py`
 
-
 All code files are readable on their own and have comments. 
 
 ## Getting started
