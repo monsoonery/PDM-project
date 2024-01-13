@@ -55,7 +55,7 @@ To edit the path the robot follows, open `main_simulation_only.py` and edit the 
 ## Reproducing our test results
 The file `main.py` contains a list of parameters that can be edited to run the various cases mentioned in our report. The most relevant variables are:
 
-1. `random.seed(14)`: The random seed used by random() in the RRT* code.
+1. `random.seed()`: The random seed used by random() in the RRT* code.
     - Trial 1: seed 6
     - Trial 2: seed 42
     - Trial 3: seed 14
@@ -72,7 +72,6 @@ The following sections show the parameters we used for each test case:
 sample_radius = 3
 neighbor_radius = 3 
 n_expansions = 10000
-also_run_normal_RRT = False
 stop_when_goal_reached = True
 ```
 
@@ -81,16 +80,14 @@ stop_when_goal_reached = True
 sample_radius = 5
 neighbor_radius = 3 
 n_expansions = 10000
-also_run_normal_RRT = False
 stop_when_goal_reached = True 
 ```
 
 ### Case 1.3:
 ```
 sample_radius = 3
-neighbor_radius = 3 
+neighbor_radius = 5 
 n_expansions = 10000
-also_run_normal_RRT = False
 stop_when_goal_reached = True
 ```
 
@@ -99,7 +96,6 @@ stop_when_goal_reached = True
 sample_radius = 5	
 neighbor_radius = 3 	
 n_expansions = 600	
-also_run_normal_RRT = False	
 stop_when_goal_reached = False	
 ```
 
